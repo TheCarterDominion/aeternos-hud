@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no,maximum-scale=1"/>
-<title>Aeternos • Godware/GodTech Mega-Suite (Arcade • Healing • Bible • Creator • Worlds • NFTs • SaaS)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no"/>
+<title>Aeternos • Godware/GodTech Mega-Suite v2 (100-fold)</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <style>
 :root{
@@ -14,6 +14,7 @@ html,body{margin:0;height:100%;background:radial-gradient(1600px 1000px at 50% 8
   color:var(--ink);font-family:-apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial;-webkit-text-size-adjust:100%;
   overscroll-behavior:none;overflow:hidden}
 *{touch-action:manipulation}
+button{cursor:pointer}
 .app{position:fixed;inset:0;height:100dvh;display:flex;flex-direction:column}
 .top{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;gap:10px}
 h1{margin:0;font-size:18px;text-shadow:0 0 18px var(--glow)}
@@ -23,7 +24,7 @@ h1{margin:0;font-size:18px;text-shadow:0 0 18px var(--glow)}
 .panel{flex:1;display:none}
 .panel.active{display:block}
 .card{height:100%;display:flex;align-items:center;justify-content:center;padding:12px}
-.box{width:100%;max-width:1300px;background:var(--panel);border:1px solid rgba(255,255,255,.12);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.45);padding:12px}
+.box{width:100%;max-width:1350px;background:var(--panel);border:1px solid rgba(255,255,255,.12);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.45);padding:12px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:8px}
 .tile{position:relative;background:#091024;border:1px solid rgba(255,255,255,.12);border-radius:16px;overflow:hidden}
 .hero{height:140px;position:relative}
@@ -86,6 +87,11 @@ pre{white-space:pre-wrap;line-height:1.6;margin:0}
 .cell.on{background:linear-gradient(180deg,#62d3ff,#ff49f0)}
 .slider{width:120px}
 
+/* Memory */
+.mem{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.mem .card{height:80px;border-radius:10px;border:2px solid rgba(255,255,255,.4);background:#0d1428;display:flex;justify-content:center;align-items:center;font-size:22px}
+.mem .card.open{background:linear-gradient(180deg,#62d3ff,#ff49f0);color:#000}
+.mem .card.done{background:rgba(98,211,255,.25)}
 /* SaaS / Dev */
 .console{font-family:ui-monospace,Consolas,Menlo,monospace;background:#0b1734;border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:10px;height:220px;overflow:auto}
 </style>
@@ -93,7 +99,7 @@ pre{white-space:pre-wrap;line-height:1.6;margin:0}
 <body>
 <div class="app">
   <div class="top">
-    <h1>Aeternos • Godware/GodTech Mega-Suite — “Behold, I make all things new.”</h1>
+    <h1>Aeternos • Godware/GodTech Mega-Suite v2 — “Behold, I make all things new.”</h1>
     <div class="nav">
       <button class="btn" data-view="hub">Hub</button>
       <button class="btn" data-view="arcade">Arcade</button>
@@ -112,10 +118,10 @@ pre{white-space:pre-wrap;line-height:1.6;margin:0}
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
         <div>
           <div style="font-weight:700;font-size:18px">Choose a path</div>
-          <div class="mut">One file • iPad-safe • Touch-first • Crisp neon vector art • Audio inside (tap Enable Audio per tab).</div>
+          <div class="mut">One file • iPad-safe • Touch-first • Crisp neon vector art • Music engine (tap Enable Audio per tab).</div>
         </div>
         <div>
-          <span class="pill">Arcade x5</span>
+          <span class="pill">Arcade x6</span>
           <span class="pill">Healing Pads</span>
           <span class="pill">Bible & Study</span>
           <span class="pill">Creator Lab</span>
@@ -125,7 +131,7 @@ pre{white-space:pre-wrap;line-height:1.6;margin:0}
       </div>
       <div class="grid">
         <div class="tile"><div class="hero"><div class="fx"></div></div>
-          <div class="title"><div><div style="font-weight:600">Arcade Kingdom</div><div class="mut">Runner • Slice • TicTacToe • Dominoes • Bowling • Pinball</div></div>
+          <div class="title"><div><div style="font-weight:600">Arcade Kingdom</div><div class="mut">Runner • Slice • TicTacToe • Memory • Dominoes • Bowling • Pinball</div></div>
             <button class="btn" data-view="arcade">Enter</button></div>
         </div>
         <div class="tile"><div class="hero"><div class="fx"></div></div>
@@ -141,7 +147,7 @@ pre{white-space:pre-wrap;line-height:1.6;margin:0}
             <button class="btn" data-view="creator">Create</button></div>
         </div>
         <div class="tile"><div class="hero"><div class="fx"></div></div>
-          <div class="title"><div><div style="font-weight:600">Worlds & Sims</div><div class="mut">City of Light walk • Crystal Chamber</div></div>
+          <div class="title"><div><div style="font-weight:600">Worlds & Sims</div><div class="mut">City walk • Crystal chamber</div></div>
             <button class="btn" data-view="worlds">Explore</button></div>
         </div>
         <div class="tile"><div class="hero"><div class="fx"></div></div>
@@ -205,21 +211,29 @@ pre{white-space:pre-wrap;line-height:1.6;margin:0}
             <div class="mut" id="tt_status">You are X. Good luck!</div>
           </div>
           <div class="sep" style="height:10px"></div>
-          <div style="font-weight:700;margin-bottom:6px">Dominoes (local)</div>
-          <div class="dominoBoard" id="d_board"></div>
-          <div style="margin-top:6px"><button class="btn small" id="d_draw">Draw</button> <button class="btn small" id="d_reset">New</button> <span class="mut" id="d_status">Match the ends.</span></div>
+          <div style="font-weight:700;margin-bottom:6px">Memory Cards</div>
+          <div class="mem" id="m_grid"></div>
+          <div style="margin-top:6px"><button class="btn small" id="m_new">New Deck</button> <span class="pill">Moves <b id="m_moves">0</b></span> <span class="pill">Matches <b id="m_matches">0</b>/8</span></div>
         </div>
       </div>
 
       <div class="two" style="margin-top:12px">
         <div>
           <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-weight:700">Dominoes (toy)</div>
+            <div><button class="btn small" id="d_draw">Draw</button> <button class="btn small" id="d_reset">New</button></div>
+          </div>
+          <div class="dominoBoard" id="d_board"></div>
+          <div class="mut" id="d_status" style="margin-top:6px">Match the ends.</div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
             <div style="font-weight:700">Bowling (swipe to roll)</div>
             <button class="btn small" id="bw_reset">Reset</button>
           </div>
           <div class="lane" id="bw_lane"></div>
-        </div>
-        <div>
+          <div class="mut" id="bw_score" style="margin-top:6px">Score: 0</div>
+          <div class="sep" style="height:10px"></div>
           <div style="display:flex;justify-content:space-between;align-items:center">
             <div style="font-weight:700">Pinball (tap flippers)</div>
             <button class="btn small" id="pb_reset">Reset</button>
@@ -242,6 +256,8 @@ pre{white-space:pre-wrap;line-height:1.6;margin:0}
         <span class="pill">Focus: Jesus • Light • Peace</span>
         <button class="btn small" id="h_enable">Enable Audio</button>
         <label class="btn small">Vol <input id="h_vol" type="range" min="0" max="1" step="0.01" value="0.5" class="slider"></label>
+        <button class="btn small" id="h_music">Start Music</button>
+        <button class="btn small" id="h_stop">Stop</button>
       </div>
       <div class="two">
         <div>
@@ -259,7 +275,6 @@ pre{white-space:pre-wrap;line-height:1.6;margin:0}
             <button class="btn small h_pad" data-f="741">741 Clarity</button>
             <button class="btn small h_pad" data-f="852">852 Awaken</button>
             <button class="btn small" id="h_pink">Pink Noise</button>
-            <button class="btn small" id="h_stop">Stop All</button>
           </div>
         </div>
         <div>
@@ -289,7 +304,7 @@ pre{white-space:pre-wrap;line-height:1.6;margin:0}
         </select>
         <div class="sep" style="height:10px"></div>
         <div style="font-weight:700;margin-bottom:6px">Search</div>
-        <input id="b_q" placeholder="Search within loaded passage (e.g., light, God, heaven)"/>
+        <input id="b_q" placeholder="Search within passage (e.g., light, God, heaven)"/>
         <div class="sep" style="height:10px"></div>
         <div style="font-weight:700;margin-bottom:6px">Notes</div>
         <textarea id="b_notes" rows="8" placeholder="Write reflections, prayers, study notes… (saved locally)"></textarea>
@@ -320,7 +335,7 @@ pre{white-space:pre-wrap;line-height:1.6;margin:0}
       </div>
       <div style="font-weight:700;margin:8px 0">8-Step Sequencer (Kick • Snare • Hat • Pad)</div>
       <div class="pad" id="c_grid"></div>
-      <div class="mut" style="margin-top:8px">Tap squares to toggle steps. Long-press Pad row to sustain chords. Record with device screen/audio capture if desired.</div>
+      <div class="mut" style="margin-top:8px">Tap squares to toggle steps. Long-press Pad row for sustained chords.</div>
     </div></div>
   </section>
 
@@ -334,7 +349,7 @@ pre{white-space:pre-wrap;line-height:1.6;margin:0}
             <canvas id="w_city" height="420"></canvas>
             <div class="scan"></div>
           </div>
-          <div class="mut" style="margin-top:6px">Tap left/right to walk. Tap upper area to jump (visual only in world view).</div>
+          <div class="mut" style="margin-top:6px">Tap left/right to walk. Tap upper area to jump (visual only).</div>
         </div>
         <div>
           <div class="frame">
@@ -342,7 +357,7 @@ pre{white-space:pre-wrap;line-height:1.6;margin:0}
             <canvas id="w_crystal" height="420"></canvas>
             <div class="scan"></div>
           </div>
-          <div class="mut" style="margin-top:6px">Sacred geometry spin (2.5D math). Later: upgrade to full WebGL.</div>
+          <div class="mut" style="margin-top:6px">Sacred geometry spin (2.5D math). Ready for WebGL upgrade later.</div>
         </div>
       </div>
     </div></div>
@@ -368,7 +383,7 @@ pre{white-space:pre-wrap;line-height:1.6;margin:0}
         <div>
           <div style="font-weight:700;margin-bottom:6px">Metadata</div>
           <pre id="n_meta" class="console"></pre>
-          <div class="mut" style="margin-top:6px">Later: connect to marketplace APIs. For now, export art and metadata locally.</div>
+          <div class="mut" style="margin-top:6px">Later: connect marketplace APIs. For now: export art + metadata locally.</div>
         </div>
       </div>
     </div></div>
@@ -417,7 +432,7 @@ document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',(
 function show(name){
   Object.values(V).forEach(v=>v.classList.remove('active'));
   V[name].classList.add('active');
-  if(name==='arcade') bootRunner(), bootSlice(), bootTT(), bootDominoes(), bootBowling(), bootPinball();
+  if(name==='arcade') bootRunner(), bootSlice(), bootTT(), bootMemory(), bootDominoes(), bootBowling(), bootPinball();
   if(name==='healing') bootHealing();
   if(name==='bible') bootBible();
   if(name==='creator') bootCreator();
@@ -453,27 +468,33 @@ function trail(ctx,pts,col='rgba(98,211,255,.35)'){
   ctx.restore();
 }
 
-/* ========= Audio base ========= */
+/* ========= Audio base (shared) ========= */
 function mkAudio(){
   let AC=null, master=null;
   function ensure(){ if(AC) return; AC=new (window.AudioContext||window.webkitAudioContext)(); master=AC.createGain(); master.gain.value=.6; master.connect(AC.destination); }
   function tone(f=440,d=.15,v=.25,type='sine'){ if(!AC) return; const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain(); o.type=type;o.frequency.value=f; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(v,t+.01); g.gain.exponentialRampToValueAtTime(.0001,t+d); o.connect(g); g.connect(master); o.start(t); o.stop(t+d+.05); }
-  return {get AC(){return AC}, master, ensure, tone, ctx:()=>AC};
+  function musicOn(){ if(!AC) return; // simple generative pad + arp
+    const t=AC.currentTime; const root=220; for(let i=0;i<4;i++){ const o=AC.createOscillator(), g=AC.createGain(); o.type='sawtooth'; o.frequency.value=root*Math.pow(2,i/2); g.gain.value=.0001; o.connect(g); g.connect(master); o.start(t); g.gain.linearRampToValueAtTime(.03+i*0.01,t+2); }
+    let step=0; const seq=()=>{ if(!AC) return; const now=AC.currentTime; const o=AC.createOscillator(), g=AC.createGain(); o.type='triangle'; o.frequency.value=root*[1,5/4,3/2,2][step%4]; g.gain.value=.0001; o.connect(g); g.connect(master); o.start(now); g.gain.linearRampToValueAtTime(.08,now+.02); g.gain.exponentialRampToValueAtTime(.0001,now+.25); o.stop(now+.3); step++; musicTimer=setTimeout(seq,260); }; musicTimer=setTimeout(seq,300);
+  }
+  let musicTimer=null;
+  function musicOff(){ if(musicTimer){ clearTimeout(musicTimer); musicTimer=null; } }
+  return {get AC(){return AC}, master, ensure, tone, musicOn, musicOff};
 }
 
-/* =================================== ARCADE: Runner =================================== */
+/* =============== ARCADE: Runner (tuned jump + shield + coins) =============== */
 let runnerBoot=false;
 function bootRunner(){ if(runnerBoot) return; runnerBoot=true;
 const cvs=gid('r_canvas'); const {ctx}=setupCanvas(cvs);
 const ui={score:gid('r_score'),coins:gid('r_coins'),spd:gid('r_spd'),fps:gid('r_fps'),shield:gid('r_shield'),
   audio:gid('r_audio'),duck:gid('r_duck'),pause:gid('r_pause'),reset:gid('r_reset')};
-const A=mkAudio(); let audioOn=false; ui.audio.onclick=()=>{ A.ensure(); audioOn=!audioOn; ui.audio.textContent=audioOn?'Audio: On':'Enable Audio'; A.master.gain.value=audioOn?.25:.0; if(A.AC&&A.AC.state==='suspended') A.AC.resume();};
+const A=mkAudio(); let audioOn=false; ui.audio.onclick=()=>{ A.ensure(); audioOn=!audioOn; ui.audio.textContent=audioOn?'Audio: On':'Enable Audio'; if(A.AC&&A.AC.state==='suspended') A.AC.resume(); A.master.gain.value=audioOn?.25:.0; };
 const W=()=>cvs.clientWidth, H=()=>cvs.clientHeight;
 let paused=false, gameOver=false, last=performance.now(), frames=0, acc=0;
 const ply={x:120,y:0,w:44,h:56,vy:0,ground:0,inv:0,duck:0,trail:[]};
-const GRAV=1.05, GRAV_HOLD=0.42, JMIN=-20, JMAX=-30, HOLD_MS=260, COYOTE=10, BUF=10;
+const GRAV=1.00, GRAV_HOLD=0.38, JMIN=-22, JMAX=-34, HOLD_MS=280, COYOTE=12, BUF=12;
 let coyote=0, buffer=0, holding=false, holdStart=0;
-let score=0, coins=0, baseSpeed=6.0, shield=100;
+let score=0, coins=0, baseSpeed=6.2, shield=100;
 const obs=[], tokens=[], fx=[]; let spawnCD=0, tokenCD=50;
 function reset(){ paused=false; gameOver=false; score=0; coins=0; shield=100; obs.length=0; tokens.length=0; fx.length=0; ply.trail.length=0;
   const feet=(H()-96)|0; ply.ground=feet; ply.h=56; ply.y=feet-ply.h; ply.vy=0; ply.inv=0; ply.duck=0; coyote=0; buffer=0; holding=false; holdStart=0;
@@ -483,7 +504,7 @@ reset();
 function blip(f,d=.06,v=.25,t='sine'){ if(audioOn){ A.tone(f,d,v,t); } }
 function requestJump(v){ buffer=BUF; const onGround=(ply.y>=ply.ground-ply.h-0.1); if(onGround||coyote>0){ ply.vy=v; coyote=0; buffer=0; holding=true; holdStart=performance.now(); blip(640,.05,.22,'triangle');
   for(let i=0;i<22;i++) fx.push({x:ply.x+ply.w/2,y:ply.y+ply.h,vx:(Math.random()-0.5)*4,vy:-Math.random()*3-1,life:42,col:'#62d3ff'}); } }
-function doDuck(){ if(ply.duck>0) return; const feet=ply.y+ply.h; ply.h=32; ply.y=feet-ply.h; ply.duck=18; blip(480,.04,.18,'square'); }
+function doDuck(){ if(ply.duck>0) return; const feet=ply.y+ply.h; ply.h=32; ply.y=feet-ply.h; ply.duck=20; blip(480,.04,.18,'square'); }
 ui.duck.onclick=doDuck;
 function spawnObstacle(){ const g=ply.ground,r=Math.random();
   if(r<0.35) obs.push({x:W()+40,y:g-28,w:28,h:28});
@@ -517,7 +538,7 @@ function step(dt){
   for(let i=obs.length-1;i>=0;i--){ const o=obs[i]; o.x-=spd; const b=hb(); if(o.x<b.x+b.w && o.x+o.w>b.x && o.y<b.y+b.h && o.y+o.h>b.y){ if(ply.inv<=0) hit=true; } if(o.x+o.w<-40){ obs.splice(i,1); score++; ui.score.textContent=''+score; } }
   if(hit){ shield=Math.max(0,shield-34); ui.shield.textContent=shield+'%'; flash(); blip(220,.12,.25,'square'); for(let i=0;i<30;i++) fx.push({x:ply.x+ply.w/2,y:ply.y+ply.h/2,vx:(Math.random()-0.5)*5,vy:(Math.random()-0.8)*5,life:36,col:'#ff49f0'}); ply.inv=24; if(shield<=0) gameOver=true; }
   ply.inv=Math.max(0,ply.inv-1);
-  for(let i=tokens.length-1;i>=0;i--){ const c=tokens[i]; c.x-=spd; c.rot+=.12; const cx=c.x,cy=c.y,r=c.r;
+  for(let i= tokens.length-1;i>=0;i--){ const c=tokens[i]; c.x-=spd; c.rot+=.12; const cx=c.x,cy=c.y,r=c.r;
     if(cx+r>ply.x && cx-r<ply.x+ply.w && cy+r>ply.y && cy-r<ply.y+(ply.duck?32:ply.h)){ tokens.splice(i,1); coins++; ui.coins.textContent=''+coins; blip(880,.05,.22,'sine'); for(let k=0;k<16;k++) fx.push({x:cx,y:cy,vx:(Math.random()-0.5)*3,vy:(Math.random()-1.2)*3,life:28,col:'#ffd76a'}); }
     else if(c.x+r<-20) tokens.splice(i,1);
   }
@@ -534,7 +555,7 @@ function draw(){
   for(const p of fx){ ctx.fillStyle=p.col; ctx.fillRect(p.x|0,p.y|0,2,2); }
   if(gameOver){ ctx.fillStyle='rgba(0,0,0,.35)'; ctx.fillRect(0,0,w,h); ctx.fillStyle='#ecf3ff'; ctx.font='18px -apple-system,system-ui,Segoe UI'; ctx.fillText('Game Over — Tap to Restart',12,24); }
 }
-let last=performance.now(); function loop(ts){ const dt=ts-last; last=ts; step(dt); draw(); frames++; acc+=dt; if(acc>500){ ui.fps.textContent=''+Math.round(1000/(acc/frames)); frames=0; acc=0; } requestAnimationFrame(loop); } requestAnimationFrame(loop);
+let _last=performance.now(); function loop(ts){ const dt=ts-_last; _last=ts; step(dt); draw(); frames++; acc+=dt; if(acc>500){ ui.fps.textContent=''+Math.round(1000/(acc/frames)); frames=0; acc=0; } requestAnimationFrame(loop); } requestAnimationFrame(loop);
 function startJump(e){ if(gameOver){ reset(); return; } A.ensure(); if(A.AC&&A.AC.state==='suspended') A.AC.resume(); const r=cvs.getBoundingClientRect(), rel=Math.max(0,Math.min(1,1-((e.clientY-r.top)/r.height))); const v=JMIN+(JMAX-JMIN)*rel; requestJump(v); e.preventDefault(); }
 function endHold(){ holding=false; }
 let swipeY=null; cvs.addEventListener('pointerdown',e=>{ startJump(e); swipeY=e.clientY; },{passive:false});
@@ -545,13 +566,13 @@ ui.pause.onclick=()=>{ if(gameOver){ reset(); return; } paused=!paused; ui.pause
 ui.reset.onclick=()=>{ reset(); blip(720,.08,.25,'sine'); };
 }
 
-/* =================================== ARCADE: Slice =================================== */
+/* ===================== ARCADE: Slice ===================== */
 let sliceBoot=false;
 function bootSlice(){ if(sliceBoot) return; sliceBoot=true;
 const cvs=gid('s_canvas'); const {ctx}=setupCanvas(cvs);
-let paused=false, gameOver=false, last=performance.now(), frames=0, acc=0, score=0, combo=0, lastHitAt=0;
+let paused=false, gameOver=false, last=performance.now(), score=0, combo=0, lastHitAt=0;
 const shards=[], fx=[];
-function seed(){ shards.length=0; fx.length=0; const W=cvs.clientWidth,H=cvs.clientHeight; for(let i=0;i<36;i++) shards.push({x:Math.random()*W,y:Math.random()*H,w:14+Math.random()*18,s:0.6+Math.random()*1.8}); score=0; combo=0; lastHitAt=0; gameOver=false; }
+function seed(){ shards.length=0; fx.length=0; const W=cvs.clientWidth,H=cvs.clientHeight; for(let i=0;i<42;i++) shards.push({x:Math.random()*W,y:Math.random()*H,w:14+Math.random()*18,s:0.6+Math.random()*1.8}); score=0; combo=0; lastHitAt=0; gameOver=false; }
 seed();
 function step(dt){ if(paused||gameOver) return; const W=cvs.clientWidth,H=cvs.clientHeight;
   for(const s of shards){ s.x -= s.s*46*dt/1000; if(s.x<-s.w){ s.x=W+24; s.y=Math.random()*H; s.w=14+Math.random()*18; s.s=0.6+Math.random()*1.8; } }
@@ -566,8 +587,8 @@ function draw(){ const W=cvs.clientWidth,H=cvs.clientHeight;
   ctx.fillStyle='rgba(255,73,240,.95)'; for(const p of fx){ ctx.fillRect(p.x|0,p.y|0,2,2); }
   if(gameOver){ ctx.fillStyle='#ecf3ff'; ctx.font='18px -apple-system,system-ui,Segoe UI'; ctx.fillText('Game Over — Tap to Restart',12,24); }
 }
-function loop(ts){ const dt=ts-last; last=ts; step(dt); draw(); frames++; acc+=dt; if(acc>500){ frames=0; acc=0; } requestAnimationFrame(loop);} requestAnimationFrame(loop);
-function sliceAt(x,y){ const R=18; let hits=0; for(let i=shards.length-1;i>=0;i--){ const s=shards[i],cx=s.x+s.w*0.6,cy=s.y; const dx=cx-x,dy=cy-y; if(dx*dx+dy*dy<=R*R){ for(let k=0;k<18;k++) fx.push({x:cx,y:cy,vx:(Math.random()-0.5)*3,vy:(Math.random()-1.2)*3,life:30}); shards.splice(i,1); hits++; } }
+function loop(ts){ const dt=ts-last; last=ts; step(dt); draw(); requestAnimationFrame(loop);} requestAnimationFrame(loop);
+function sliceAt(x,y){ const R=20; let hits=0; for(let i=shards.length-1;i>=0;i--){ const s=shards[i],cx=s.x+s.w*0.6,cy=s.y; const dx=cx-x,dy=cy-y; if(dx*dx+dy*dy<=R*R){ for(let k=0;k<18;k++) fx.push({x:cx,y:cy,vx:(Math.random()-0.5)*3,vy:(Math.random()-1.2)*3,life:30}); shards.splice(i,1); hits++; } }
   const W=cvs.clientWidth,H=cvs.clientHeight; for(let j=0;j<hits;j++){ shards.push({x:W+24,y:Math.random()*H,w:14+Math.random()*18,s:0.6+Math.random()*1.8}); } if(hits>0){ const now=performance.now(); combo=(now-lastHitAt<=1200)?combo+1:1; lastHitAt=now; score+=hits*Math.max(1,combo); } else { combo=0; flash(); }
 }
 cvs.addEventListener('pointerdown',e=>{ if(gameOver){ seed(); return; } const r=cvs.getBoundingClientRect(); sliceAt(e.clientX-r.left,e.clientY-r.top); e.preventDefault(); },{passive:false});
@@ -575,7 +596,7 @@ gid('s_pause').onclick=()=>{ paused=!paused; gid('s_pause').textContent=paused?'
 gid('s_reset').onclick=()=>{ seed(); };
 }
 
-/* =================================== ARCADE: TicTacToe =================================== */
+/* ===================== ARCADE: TicTacToe ===================== */
 let ttBoot=false;
 function bootTT(){ if(ttBoot) return; ttBoot=true;
 const cells=[...document.querySelectorAll('.tt .sq')], status=gid('tt_status'), reset=gid('tt_reset');
@@ -598,77 +619,87 @@ reset.onclick=()=>{ board=Array(9).fill(null); over=false; draw(); status.textCo
 draw();
 }
 
-/* =================================== ARCADE: Dominoes (toy) =================================== */
+/* ===================== ARCADE: Memory Cards ===================== */
+let memBoot=false;
+function bootMemory(){ if(memBoot) return; memBoot=true;
+const grid=gid('m_grid'), movesEl=gid('m_moves'), matchEl=gid('m_matches'), newBtn=gid('m_new');
+const icons=['★','✝','✦','✧','☼','◆','◈','✙']; let deck=[], open=[], moves=0, matches=0;
+function make(){ grid.innerHTML=''; moves=0; matches=0; open.length=0; movesEl.textContent='0'; matchEl.textContent='0';
+  deck=[...icons,...icons].sort(()=>Math.random()-0.5);
+  deck.forEach((ch,i)=>{ const b=document.createElement('button'); b.className='card'; b.textContent=''; b.dataset.v=ch; b.onclick=()=>flip(b); grid.appendChild(b); });
+}
+function flip(b){ if(b.classList.contains('done')||b.classList.contains('open')) return; b.classList.add('open'); b.textContent=b.dataset.v; open.push(b);
+  if(open.length===2){ moves++; movesEl.textContent=''+moves; if(open[0].dataset.v===open[1].dataset.v){ open.forEach(x=>{ x.classList.add('done'); setTimeout(()=>x.classList.remove('open'),120); }); open.length=0; matches++; matchEl.textContent=''+matches; }
+  else { setTimeout(()=>{ open.forEach(x=>{ x.classList.remove('open'); x.textContent=''; }); open.length=0; },420); } }
+}
+newBtn.onclick=make; make();
+}
+
+/* ===================== ARCADE: Dominoes (toy) ===================== */
 let domBoot=false;
 function bootDominoes(){ if(domBoot) return; domBoot=true;
 const board=gid('d_board'), drawBtn=gid('d_draw'), resetBtn=gid('d_reset'), status=gid('d_status');
 let left=3,right=3; // start value
-function tile(v){ const el=document.createElement('div'); el.className='dominoTile'; el.textContent=v; el.onclick=()=>{ const n=parseInt(v,10); if(n===left){ left=(n+Math.floor(Math.random()*6))%7; status.textContent='Placed on left.'; el.remove(); } else if(n===right){ right=(n+Math.floor(Math.random()*6))%7; status.textContent='Placed on right.'; el.remove(); } else { status.textContent='No match; draw again.'; } };
+function tile(v){ const el=document.createElement('button'); el.className='dominoTile'; el.textContent=v; el.onclick=()=>{ const n=parseInt(v,10);
+  if(n===left){ left=(n+Math.floor(Math.random()*6))%7; status.textContent='Placed on left.'; el.remove(); } else if(n===right){ right=(n+Math.floor(Math.random()*6))%7; status.textContent='Placed on right.'; el.remove(); } else { status.textContent='No match; draw again.'; } };
 return el;}
 function drawTiles(k=7){ for(let i=0;i<k;i++){ const v=Math.floor(Math.random()*7); board.appendChild(tile(v)); } }
 resetBtn.onclick=()=>{ board.innerHTML=''; left=right=3; status.textContent='New round. Match either end.'; drawTiles(7); };
 drawBtn.onclick=()=>drawTiles(3); resetBtn.click();
 }
 
-/* =================================== ARCADE: Bowling =================================== */
+/* ===================== ARCADE: Bowling ===================== */
 let bowlBoot=false;
 function bootBowling(){ if(bowlBoot) return; bowlBoot=true;
-const lane=gid('bw_lane'); lane.innerHTML=''; const pins=[], rows=[[0,0],[20,0],[40,0],[60,0]].map((_,r)=>r);
-for(let r=0;r<4;r++){ for(let i=0;i<=r;i++){ const p=document.createElement('div'); p.className='pin'; p.style.left=(lane.clientWidth/2 - 20 + i*20 - r*10)+'px'; p.style.top=(40 + r*34)+'px'; lane.appendChild(p); pins.push(p); } }
+const lane=gid('bw_lane'), scoreEl=gid('bw_score'); lane.innerHTML=''; const pins=[], spacing=22, leftBase=lane.clientWidth/2 - spacing*1.5;
+for(let r=0;r<4;r++){ for(let i=0;i<=r;i++){ const p=document.createElement('div'); p.className='pin'; p.style.left=(leftBase + i*spacing + (r*(spacing/2)))+'px'; p.style.top=(40 + r*34)+'px'; lane.appendChild(p); pins.push(p); } }
 const ball=document.createElement('div'); ball.className='ball'; ball.style.left=(lane.clientWidth/2 -14)+'px'; ball.style.top=(lane.clientHeight-40)+'px'; lane.appendChild(ball);
-let vx=0, vy=0, rolling=false; let startY=null, startX=null;
+let vx=0, vy=0, rolling=false; let startY=null, startX=null, score=0;
 lane.addEventListener('pointerdown',e=>{ startY=e.clientY; startX=e.clientX; });
 lane.addEventListener('pointerup',e=>{ if(rolling) return; const dy=(startY - e.clientY); const dx=(e.clientX - startX); vx=dx*0.05; vy=-Math.max(6,Math.min(20,dy*0.06)); rolling=true; });
 function step(){ if(!rolling) return; const x=parseFloat(ball.style.left), y=parseFloat(ball.style.top);
-  let nx=x+vx, ny=y+vy; vy+=0.3; // gravity
-  // walls
+  let nx=x+vx, ny=y+vy; vy+=0.3;
   if(nx<2){ nx=2; vx*=-0.5; } if(nx>lane.clientWidth-30){ nx=lane.clientWidth-30; vx*=-0.5; }
   ball.style.left=nx+'px'; ball.style.top=ny+'px';
-  // collide pins
-  pins.forEach(p=>{ if(!p) return; const px=parseFloat(p.style.left), py=parseFloat(p.style.top); const dx=(px-nx), dy=(py-ny); const d=Math.hypot(dx,dy);
-    if(d<28){ p.style.transform='translateY(-120px) rotate(40deg)'; p.style.opacity='0.2'; setTimeout(()=>p.remove(),400); }
+  pins.forEach(p=>{ if(!p || p.dataset.hit) return; const px=parseFloat(p.style.left), py=parseFloat(p.style.top); const dx=(px-nx), dy=(py-ny); const d=Math.hypot(dx,dy);
+    if(d<28){ p.dataset.hit='1'; p.style.transform='translateY(-120px) rotate(40deg)'; p.style.opacity='0.2'; setTimeout(()=>p.remove(),400); score+=10; scoreEl.textContent='Score: '+score; }
   });
   if(ny<20){ rolling=false; }
 }
 setInterval(step,16);
-gid('bw_reset').onclick=()=>bootBowling(); // re-boot
+gid('bw_reset').onclick=()=>bootBowling();
 }
 
-/* =================================== ARCADE: Pinball (mini) =================================== */
+/* ===================== ARCADE: Pinball (mini) ===================== */
 let pinBoot=false;
 function bootPinball(){ if(pinBoot) return; pinBoot=true;
 const cvs=gid('pb_canvas'); const {ctx}=setupCanvas(cvs);
 const left=gid('pb_left'), right=gid('pb_right');
-let ball={x:120,y:50,vx:2,vy:0}, g=0.3, flL=0, flR=0; // flipper angles
+let ball={x:120,y:50,vx:2,vy:0}, g=0.3, flL=0, flR=0;
 left.onclick=()=>{ flL=1; setTimeout(()=>flL=0,140); }; right.onclick=()=>{ flR=1; setTimeout(()=>flR=0,140); };
 function draw(){ const W=cvs.clientWidth,H=cvs.clientHeight; ctx.fillStyle='#061024'; ctx.fillRect(0,0,W,H);
-  // bumpers
   neonRect(ctx,20,20,60,10); neonRect(ctx,W-80,60,60,10); neonRect(ctx,60,120,10,60);
-  // flippers
   ctx.fillStyle='#62d3ff'; ctx.fillRect(40,H-40,80,10); ctx.save(); ctx.translate(40,H-40); ctx.rotate(flL?-0.5:-0.1); ctx.fillStyle='#ff49f0'; ctx.fillRect(0,0,80,10); ctx.restore();
   ctx.fillStyle='#62d3ff'; ctx.fillRect(W-120,H-40,80,10); ctx.save(); ctx.translate(W-40,H-40); ctx.rotate(flR?0.5:0.1); ctx.fillStyle='#ff49f0'; ctx.fillRect(-80,0,80,10); ctx.restore();
-  // ball
   ctx.fillStyle='#ffd76a'; ctx.beginPath(); ctx.arc(ball.x,ball.y,8,0,Math.PI*2); ctx.fill();
 }
 function step(){ const W=cvs.clientWidth,H=cvs.clientHeight; ball.vy+=g; ball.x+=ball.vx; ball.y+=ball.vy;
-  // walls
   if(ball.x<8){ ball.x=8; ball.vx*=-0.9; } if(ball.x>W-8){ ball.x=W-8; ball.vx*=-0.9; }
   if(ball.y<8){ ball.y=8; ball.vy*=-0.9; } if(ball.y>H-8){ ball.y=H-8; ball.vy*=-0.9; }
-  // crude flippers impulse
   if(ball.y>H-60 && ball.x<120 && flL) { ball.vx=-6; ball.vy=-8; }
   if(ball.y>H-60 && ball.x>W-120 && flR) { ball.vx=6; ball.vy=-8; }
 }
-function loop(){ step(); draw(); requestAnimationFrame(loop); } loop();
+(function loop(){ step(); draw(); requestAnimationFrame(loop); })();
 gid('pb_reset').onclick=()=>{ ball={x:cvs.clientWidth/2,y:40,vx:2,vy:0}; };
 }
 
-/* =================================== HEALING =================================== */
+/* ===================== HEALING (pads + generative music + breath viz) ===================== */
 let healBoot=false;
 function bootHealing(){ if(healBoot) return; healBoot=true;
 const cvs=gid('h_canvas'); const {ctx}=setupCanvas(cvs);
-const enable=gid('h_enable'), vol=gid('h_vol'), stopB=gid('h_stop'), pinkBtn=gid('h_pink'); const pads=[...document.querySelectorAll('.h_pad')];
+const enable=gid('h_enable'), vol=gid('h_vol'), stopB=gid('h_stop'), pinkBtn=gid('h_pink'), musicBtn=gid('h_music'); const pads=[...document.querySelectorAll('.h_pad')];
 const A=mkAudio(); let gain=null, analyser=null, pink=null, osc=new Map();
-enable.onclick=()=>{ A.ensure(); gain=A.AC.createGain(); gain.gain.value=+vol.value; analyser=A.AC.createAnalyser(); analyser.fftSize=1024; analyser.smoothingTimeConstant=.8; gain.connect(analyser); analyser.connect(A.AC.destination); enable.textContent='Audio: On'; };
+enable.onclick=()=>{ A.ensure(); gain=A.AC.createGain(); gain.gain.value=+vol.value; analyser=A.AC.createAnalyser(); analyser.fftSize=1024; analyser.smoothingTimeConstant=.8; gain.connect(analyser); analyser.connect(A.AC.destination); enable.textContent='Audio: On'; if(A.AC.state==='suspended') A.AC.resume(); };
 vol.oninput=()=>{ if(gain) gain.gain.value=+vol.value; };
 pads.forEach(b=>b.addEventListener('click',()=>{ if(!A.AC) return; const f=+b.dataset.f; const key='t'+f;
   if(osc.has(key)){ try{osc.get(key).stop();}catch{} osc.delete(key); b.classList.remove('on'); return; }
@@ -681,7 +712,8 @@ pinkBtn.onclick=()=>{ if(!A.AC) return; if(pink){ pink.disconnect(); pink=null; 
     b4=.55000*b4 + white*0.5329522; b5=.7616*b5 + white*0.0168980; const pinkS=b0+b1+b2+b3+b4+b5+b6+white*0.5362; b6=white*0.115926; out[i]=pinkS*0.11; } };
   node.connect(gain); pink=node; pinkBtn.classList.add('on');
 };
-stopB.onclick=()=>{ osc.forEach(o=>{try{o.stop()}catch{}}); osc.clear(); if(pink){pink.disconnect(); pink=null;} pads.forEach(b=>b.classList.remove('on')); pinkBtn.classList.remove('on'); };
+musicBtn.onclick=()=>{ if(!A.AC) return; if(musicBtn.dataset.on){ A.musicOff(); delete musicBtn.dataset.on; musicBtn.textContent='Start Music'; } else { A.musicOn(); musicBtn.dataset.on='1'; musicBtn.textContent='Stop Music'; } };
+stopB.onclick=()=>{ osc.forEach(o=>{try{o.stop()}catch{}}); osc.clear(); if(pink){pink.disconnect(); pink=null;} pads.forEach(b=>b.classList.remove('on')); pinkBtn.classList.remove('on'); A.musicOff(); delete musicBtn.dataset.on; musicBtn.textContent='Start Music'; };
 
 function breathViz(){
   const W=cvs.clientWidth,H=cvs.clientHeight; ctx.fillStyle='#050912'; ctx.fillRect(0,0,W,H);
@@ -692,8 +724,8 @@ function breathViz(){
   ctx.fillStyle='rgba(255,255,255,.9)'; ctx.font='16px -apple-system,system-ui'; ctx.textAlign='center'; ctx.fillText(phase, cx, cy+r+18);
 }
 function bars(){
-  if(!A.AC || !analyser){ breathViz(); return; }
   breathViz();
+  if(!A.AC || !analyser) return;
   const W=cvs.clientWidth,H=cvs.clientHeight; const data=new Uint8Array(analyser.frequencyBinCount); analyser.getByteFrequencyData(data);
   const n=Math.min(96,data.length), bw=W/n;
   for(let i=0;i<n;i++){ const v=data[i]/255, h=v*(H*0.35), x=i*bw, y=H*0.15+(H*0.35-h); neonRect(ctx,x|0,y|0,Math.max(1,bw-2)|0,h|0); }
@@ -715,7 +747,7 @@ BTN.onclick=()=>{ const txt=PR.value.trim(); if(!txt){ MSG.textContent='Type a p
 };
 }
 
-/* =================================== BIBLE =================================== */
+/* ===================== BIBLE ===================== */
 let bibleBoot=false;
 function bootBible(){ if(bibleBoot) return; bibleBoot=true;
 const SEL=gid('b_sel'), OUT=gid('b_text'), Q=gid('b_q'), CNT=gid('b_count'), NOTES=gid('b_notes'), SAVE=gid('b_save'), MSG=gid('b_msg');
@@ -747,7 +779,7 @@ try{ NOTES.value=localStorage.getItem('aeternos_notes')||''; }catch{}
 render();
 }
 
-/* =================================== CREATOR =================================== */
+/* ===================== CREATOR (multi-track mini-DAW) ===================== */
 let creatorBoot=false;
 function bootCreator(){ if(creatorBoot) return; creatorBoot=true;
 const A=mkAudio(); const enable=gid('c_enable'), bpm=gid('c_bpm'), play=gid('c_play'), stopB=gid('c_stop'), clear=gid('c_clear'), grid=gid('c_grid');
@@ -765,7 +797,7 @@ stopB.onclick=()=>{ if(timer) clearInterval(timer); timer=null; };
 clear.onclick=()=>{ state.forEach(row=>row.fill(0)); [...grid.children].forEach(c=>c.classList.remove('on')); };
 }
 
-/* =================================== WORLDS =================================== */
+/* ===================== WORLDS ===================== */
 let worldsBoot=false;
 function bootWorlds(){ if(worldsBoot) return; worldsBoot=true;
 /* City walk */
@@ -774,7 +806,6 @@ function drawCity(){ const W=city.clientWidth,H=city.clientHeight; cx.fillStyle=
   const t=performance.now()*0.0002; for(let L=0;L<3;L++){ const a=[.10,.12,.16][L], s=[.35,.55,.85][L]; cx.save(); cx.translate(-(t*(120+L*60)%W),0); cx.fillStyle=`rgba(98,211,255,${a})`;
     for(let i=0;i<14;i++){ const bw=44+((i*71)%140), bh=120+((i*53)%160), x=(i*140)%W; neonRect(cx,x,H-120*s-bh*s,bw*s,bh*s); } cx.restore();}
   cx.fillStyle='rgba(255,255,255,.1)'; cx.fillRect(0,line(py+56+2),W,2);
-  // player
   neonRect(cx,px|0,py|0,44,56); cx.strokeStyle='rgba(255,255,255,.9)'; cx.beginPath(); cx.ellipse(px+22,py-6,10,3.5,0,0,Math.PI*2); cx.stroke();
 }
 city.addEventListener('pointerdown',e=>{ const r=city.getBoundingClientRect(); const x=e.clientX-r.left; if(x<city.clientWidth/2) px-=26; else px+=26; });
@@ -789,7 +820,7 @@ function drawCrystal(){ const W=crystal.clientWidth,H=crystal.clientHeight; kx.f
 (function loop2(){ ang+=0.02; drawCrystal(); requestAnimationFrame(loop2); })();
 }
 
-/* =================================== NFT / DIGITAL =================================== */
+/* ===================== NFT / DIGITAL ===================== */
 let nftBoot=false;
 function bootNFT(){ if(nftBoot) return; nftBoot=true;
 const cvs=gid('n_canvas'); const {ctx}=setupCanvas(cvs); const prev=gid('n_prev'), next=gid('n_next'), exp=gid('n_export'), msg=gid('n_msg'), meta=gid('n_meta');
@@ -811,11 +842,11 @@ exp.onclick=()=>{ try{ const a=document.createElement('a'); a.download=`${items[
 draw(); showMeta();
 }
 
-/* =================================== SAAS / DEV =================================== */
+/* ===================== SAAS / DEV ===================== */
 let saasBoot=false;
 function bootSaaS(){ if(saasBoot) return; saasBoot=true;
 const IN=gid('cmd_in'), OUT=gid('cmd_out'), RUN=gid('cmd_run'), CLR=gid('cmd_clear');
-RUN.onclick=()=>{ try{ /* eslint-disable no-eval */ const r=eval(IN.value); OUT.textContent+=`> ${r}\n`; OUT.scrollTop=OUT.scrollHeight; }catch(e){ OUT.textContent+=`! ${e}\n`; } };
+RUN.onclick=()=>{ try{ const r=eval(IN.value); OUT.textContent+=`> ${r}\n`; OUT.scrollTop=OUT.scrollHeight; }catch(e){ OUT.textContent+=`! ${e}\n`; } };
 CLR.onclick=()=>{ OUT.textContent=''; IN.value=''; };
 const task=gid('orc_task'), add=gid('orc_add'), clear=gid('orc_clear'), list=gid('orc_list'); let entries=[];
 add.onclick=()=>{ entries.push({when:new Date().toLocaleString(), what:task.value}); render(); };

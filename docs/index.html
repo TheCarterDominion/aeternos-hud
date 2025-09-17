@@ -3,42 +3,60 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no"/>
-<title>Aeternos • Safe Mode (Touch+Audio Baseline)</title>
+<title>Aeternos v3 — Stabilized (Audio • Bible Loader • NFTs • Visuals)</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <style>
-:root{--ink:#ecf3ff;--mut:#9fb3cc;--a:#62d3ff;--b:#ff49f0;--panel:#0f1a33;--bg1:#050916;--bg2:#01020a}
-html,body{margin:0;height:100%;background:radial-gradient(1600px 1000px at 50% 8%,var(--bg1),var(--bg2));color:var(--ink);
-  font-family:-apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial;-webkit-text-size-adjust:100%;overscroll-behavior:none;overflow:hidden}
+:root{
+  --ink:#ecf3ff; --mut:#9fb3cc; --a:#62d3ff; --b:#ff49f0; --gold:#ffd76a;
+  --panel:#0f1a33; --bg1:#050916; --bg2:#01020a; --ok:#5cffb1; --warn:#ffd76a; --err:#ff6b6b;
+}
+html,body{margin:0;height:100%;background:radial-gradient(1600px 1000px at 50% 8%,var(--bg1),var(--bg2));
+  color:var(--ink);font-family:-apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial;-webkit-text-size-adjust:100%;
+  overscroll-behavior:none;overflow:hidden}
 *{touch-action:manipulation}
-.app{position:fixed;inset:0;display:flex;flex-direction:column}
-.top{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px}
-h1{margin:0;font-size:18px;text-shadow:0 0 14px rgba(98,211,255,.6)}
+button{cursor:pointer}
+.app{position:fixed;inset:0;height:100dvh;display:flex;flex-direction:column}
+.top{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;gap:10px}
+h1{margin:0;font-size:18px;text-shadow:0 0 16px rgba(98,211,255,.6)}
 .nav{display:flex;gap:8px;flex-wrap:wrap}
 .btn{border:2px solid rgba(255,255,255,.7);background:transparent;color:var(--ink);padding:8px 10px;border-radius:12px;font-size:14px}
 .btn.small{padding:6px 8px;font-size:12px;border-radius:10px}
 .pill{border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:5px 9px;background:rgba(255,255,255,.06);font-size:12px}
+.badge{font-size:12px;border-radius:999px;padding:4px 8px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.08)}
 .panel{flex:1;display:none}
 .panel.active{display:block}
 .card{height:100%;display:flex;align-items:center;justify-content:center;padding:12px}
-.box{width:100%;max-width:1100px;background:var(--panel);border:1px solid rgba(255,255,255,.12);border-radius:16px;
-  box-shadow:0 10px 30px rgba(0,0,0,.45);padding:12px}
-.frame{width:100%;height:420px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:#050912;position:relative;overflow:hidden}
+.box{width:100%;max-width:1300px;background:var(--panel);border:1px solid rgba(255,255,255,.12);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.45);padding:12px}
+.frame{width:100%;height:430px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:#050912;position:relative;overflow:hidden}
 canvas{display:block;width:100%;height:100%;background:#050912;border-radius:12px}
-.badge{position:absolute;top:8px;left:8px;background:rgba(98,211,255,.14);border:1px solid rgba(98,211,255,.5);padding:4px 8px;border-radius:999px;font-size:12px}
-.hud{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0 10px 0}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+
+/* Status */
+.ok{color:var(--ok)} .warn{color:var(--warn)} .err{color:var(--err)}
 .mut{color:var(--mut);font-size:12px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
-.tile{background:#091024;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:12px}
+
+/* Arcade small bits */
+.hud{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0 10px}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="top">
-    <h1>Aeternos — Safe Mode</h1>
+    <h1>Aeternos v3 — Stabilized</h1>
     <div class="nav">
       <button class="btn" data-view="hub">Hub</button>
-      <button class="btn" data-view="runner">Runner</button>
+      <button class="btn" data-view="arcade">Arcade</button>
       <button class="btn" data-view="healing">Healing</button>
+      <button class="btn" data-view="creator">Creator</button>
+      <button class="btn" data-view="bible">Bible</button>
+      <button class="btn" data-view="nft">NFTs</button>
+    </div>
+    <div class="row">
+      <button class="btn" id="audio_enable">Enable Audio</button>
+      <button class="btn small" id="audio_mute">Mute</button>
+      <button class="btn small" id="audio_stop">Stop All</button>
+      <span class="pill" id="audio_state">Audio: Off</span>
     </div>
   </div>
 
@@ -46,195 +64,156 @@ canvas{display:block;width:100%;height:100%;background:#050912;border-radius:12p
   <section id="v-hub" class="panel active">
     <div class="card"><div class="box">
       <div class="grid">
-        <div class="tile">
-          <div style="font-weight:700">Touch Test</div>
-          <div class="frame"><div class="badge">Tap / Touch / Mouse</div><canvas id="touch_canvas" height="240"></canvas></div>
-          <div class="hud"><span class="pill">Touches <b id="t_count">0</b></span><span class="pill">Last <b id="t_last">—</b></span></div>
-          <div class="mut">If this increments and dots appear, input is good on this device.</div>
+        <div>
+          <div class="badge">Touch Test</div>
+          <div class="frame"><canvas id="touch_canvas" height="240"></canvas></div>
+          <div class="row"><span class="pill">Touches <b id="t_count">0</b></span><span class="pill">Last <b id="t_last">—</b></span></div>
         </div>
-        <div class="tile">
-          <div style="font-weight:700">Audio Test</div>
-          <div class="hud"><button class="btn" id="a_enable">Enable Audio</button>
-            <button class="btn small" id="a_beep">Beep</button>
-            <button class="btn small" id="a_chord">Chord</button>
+        <div>
+          <div class="badge">Quick Tips</div>
+          <div style="margin-top:8px">
+            <div class="mut">• Tap <b>Enable Audio</b> once per browser tab (iOS rule).<br>
+            • Use the <b>Stop All</b> button if anything ever hums/buzzes.<br>
+            • If you want the full Bible: add files under <code>docs/kjv/&lt;Book&gt;/&lt;chapter&gt;.txt</code>. This page will fetch them automatically (no code changes).</div>
           </div>
-          <div class="mut">On iOS/Safari, you must press “Enable Audio” once per session.</div>
-        </div>
-        <div class="tile">
-          <div style="font-weight:700">Then open Runner / Healing above</div>
-          <div class="mut">If Hub works, the other tabs should too. This build uses fallback listeners (pointer + touch + mouse) and no ResizeObserver.</div>
         </div>
       </div>
     </div></div>
   </section>
 
-  <!-- RUNNER -->
-  <section id="v-runner" class="panel">
+  <!-- ARCADE (Runner only in v3 to keep it stable; others can be re-added after confirm) -->
+  <section id="v-arcade" class="panel">
     <div class="card"><div class="box">
       <div class="hud">
         <span class="pill">Score <b id="r_score">0</b></span>
         <span class="pill">Shield <b id="r_shield">100%</b></span>
-        <button class="btn small" id="r_audio">Enable Audio</button>
         <button class="btn small" id="r_pause">Pause</button>
         <button class="btn small" id="r_reset">Restart</button>
+        <span class="mut">Tap to jump • swipe down to duck (one-tap = full jump; hold = slight extra)</span>
       </div>
-      <div class="frame">
-        <div class="badge">Pulse Runner — Safe Mode</div>
-        <canvas id="r_canvas" height="420"></canvas>
-      </div>
-      <div class="mut" style="margin-top:6px">Tap lower area = jump (press/hold for slightly higher). Tap upper area = also jumps. Swipe down = duck.</div>
+      <div class="frame"><canvas id="r_canvas" height="430"></canvas></div>
     </div></div>
   </section>
 
   <!-- HEALING -->
   <section id="v-healing" class="panel">
     <div class="card"><div class="box">
-      <div class="hud">
-        <button class="btn" id="h_enable">Enable Audio</button>
+      <div class="row">
+        <button class="btn small h_pad" data-f="396">396</button>
         <button class="btn small h_pad" data-f="432">432</button>
         <button class="btn small h_pad" data-f="528">528</button>
-        <button class="btn small" id="h_stop">Stop</button>
+        <button class="btn small h_pad" data-f="639">639</button>
+        <button class="btn small" id="h_stop">Stop Pads</button>
+        <span class="pill">Status: <b id="h_status">Idle</b></span>
       </div>
-      <div class="frame">
-        <div class="badge">Sound Healing — Safe Mode</div>
-        <canvas id="h_canvas" height="420"></canvas>
+      <div class="frame"><canvas id="h_canvas" height="430"></canvas></div>
+    </div></div>
+  </section>
+
+  <!-- CREATOR -->
+  <section id="v-creator" class="panel">
+    <div class="card"><div class="box">
+      <div class="row">
+        <label class="btn small">BPM <input id="c_bpm" type="range" min="60" max="170" step="1" value="96" style="width:120px"></label>
+        <button class="btn small" id="c_play">Play</button>
+        <button class="btn small" id="c_stop">Stop</button>
+        <button class="btn small" id="c_clear">Clear</button>
+        <span class="pill">State: <b id="c_state">Stopped</b></span>
       </div>
-      <div class="mut" style="margin-top:6px">You should hear pure tones after pressing Enable Audio.</div>
+      <div class="frame" style="display:grid;grid-template-rows:auto 1fr">
+        <div class="row" style="padding:8px"><span class="badge">Kick</span><span class="badge">Snare</span><span class="badge">Hat</span><span class="badge">Pad</span></div>
+        <div id="c_grid" style="display:grid;grid-template-columns:repeat(8,1fr);gap:6px;padding:8px"></div>
+      </div>
+      <div class="mut" style="margin-top:6px">Taps toggle steps. <b>Stop</b> silences immediately (no stuck audio).</div>
+    </div></div>
+  </section>
+
+  <!-- BIBLE -->
+  <section id="v-bible" class="panel">
+    <div class="card"><div class="box">
+      <div class="row">
+        <select id="b_book"></select>
+        <select id="b_ch"></select>
+        <button class="btn small" id="b_load">Load</button>
+        <span class="pill" id="b_info">Local sample ready • Full chapters load if present in <code>docs/kjv/…</code></span>
+      </div>
+      <div class="frame" style="height:520px; margin-top:8px; overflow:hidden">
+        <div id="b_text" style="padding:14px; height:100%; overflow:auto; box-sizing:border-box; font-size:16px; line-height:1.6"></div>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- NFT -->
+  <section id="v-nft" class="panel">
+    <div class="card"><div class="box">
+      <div class="row">
+        <button class="btn small" id="n_prev">Prev</button>
+        <button class="btn small" id="n_next">Next</button>
+        <button class="btn small" id="n_export">Export PNG</button>
+        <span class="pill" id="n_label">NFT 1/3</span>
+      </div>
+      <div class="frame"><canvas id="n_canvas" height="430"></canvas></div>
+      <div class="mut" style="margin-top:6px">Procedural art (no external files). Export saves a PNG locally.</div>
     </div></div>
   </section>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded',function(){
-  /* ===== Simple Router ===== */
-  const V={hub:gid('v-hub'),runner:gid('v-runner'),healing:gid('v-healing')};
-  document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.view)));
-  function show(name){ Object.values(V).forEach(v=>v.classList.remove('active')); V[name].classList.add('active'); if(name==='runner') bootRunner(); if(name==='healing') bootHealing(); }
-  function gid(x){return document.getElementById(x)}
+/* ========================= Utilities ========================= */
+function gid(x){ return document.getElementById(x) }
+function setupCanvas(cvs){
+  const ctx=cvs.getContext('2d',{alpha:false}); ctx.imageSmoothingEnabled=false;
+  let DPR=Math.max(1,Math.min(2,window.devicePixelRatio||1));
+  function resize(){ const w=cvs.clientWidth||600,h=cvs.clientHeight||300; cvs.width=(w*DPR)|0; cvs.height=(h*DPR)|0; ctx.setTransform(DPR,0,0,DPR,0,0); }
+  if('ResizeObserver' in window){ try{ new ResizeObserver(resize).observe(cvs); }catch{ window.addEventListener('resize',resize); } }
+  else window.addEventListener('resize',resize);
+  resize(); return {ctx,DPR};
+}
+function onCanvasTap(c,fn){ // robust: pointer + touch + mouse
+  const rel=e=>{ const r=c.getBoundingClientRect(); return {x:(e.clientX||0)-r.left,y:(e.clientY||0)-r.top} };
+  c.addEventListener('pointerdown',e=>{ fn(rel(e),e); e.preventDefault(); },{passive:false});
+  c.addEventListener('touchstart',e=>{ const t=e.changedTouches&&e.changedTouches[0]; if(!t) return; const r=c.getBoundingClientRect(); fn({x:t.clientX-r.left,y:t.clientY-r.top},e); e.preventDefault(); },{passive:false});
+  c.addEventListener('mousedown',e=>fn(rel(e),e));
+}
 
-  /* ===== Feature fallbacks ===== */
-  function setupCanvas(cvs){
-    const ctx=cvs.getContext('2d',{alpha:false});
-    ctx.imageSmoothingEnabled=false;
-    let DPR=Math.max(1,Math.min(2,window.devicePixelRatio||1));
-    function resize(){ const w=cvs.clientWidth||cvs.parentElement.clientWidth||600; const h=cvs.clientHeight||300;
-      cvs.width=(w*DPR)|0; cvs.height=(h*DPR)|0; ctx.setTransform(DPR,0,0,DPR,0,0); }
-    if('ResizeObserver' in window){
-      try{ new ResizeObserver(resize).observe(cvs); }catch{ window.addEventListener('resize',resize); }
-    } else {
-      window.addEventListener('resize',resize);
-    }
-    resize(); return {ctx,DPR};
+/* ========================= Global Audio Engine ========================= */
+const AudioEngine=(()=>{
+  let AC=null, master=null, muted=false;
+  const liveNodes=new Set(); // anything that should be stopped on demand
+  function ensure(){ if(AC) return; AC=new (window.AudioContext||window.webkitAudioContext)(); master=AC.createGain(); master.gain.value=.7; master.connect(AC.destination); }
+  function enable(){ ensure(); if(AC.state==='suspended') AC.resume(); updateBadge(); }
+  function updateBadge(){ gid('audio_state').textContent = AC && AC.state==='running' ? (muted?'Audio: Muted':'Audio: On') : 'Audio: Off'; }
+  function setMute(m){ muted=!!m; if(master) master.gain.value = muted?0:.7; updateBadge(); }
+  function stopAll(){ // hard kill everything we created
+    liveNodes.forEach(n=>{ try{ if(n.stop) n.stop(0); if(n.disconnect) n.disconnect(); }catch{} });
+    liveNodes.clear();
+    updateBadge();
   }
-
-  /* ====== HUB: touch test ====== */
-  (function(){
-    const cvs=gid('touch_canvas'); const {ctx}=setupCanvas(cvs);
-    const countEl=gid('t_count'), lastEl=gid('t_last'); let count=0;
-    function dot(x,y){ ctx.fillStyle='#62d3ff'; ctx.beginPath(); ctx.arc(x,y,6,0,Math.PI*2); ctx.fill(); }
-    function rel(e){ const r=cvs.getBoundingClientRect(); return {x:(e.clientX||0)-r.left,y:(e.clientY||0)-r.top}; }
-    function handle(x,y,label){ count++; countEl.textContent=''+count; lastEl.textContent=label; dot(x,y); }
-    // pointer
-    cvs.addEventListener('pointerdown',e=>{ const p=rel(e); handle(p.x,p.y,'pointer'); e.preventDefault(); },{passive:false});
-    // touch
-    cvs.addEventListener('touchstart',e=>{ const t=e.changedTouches[0]; if(!t) return; const r=cvs.getBoundingClientRect(); handle(t.clientX-r.left,t.clientY-r.top,'touch'); e.preventDefault(); },{passive:false});
-    // mouse
-    cvs.addEventListener('mousedown',e=>{ const p=rel(e); handle(p.x,p.y,'mouse'); });
-    // clear bg
-    ctx.fillStyle='#050912'; ctx.fillRect(0,0,cvs.clientWidth,cvs.clientHeight);
-  })();
-
-  /* ====== Audio base (very safe) ====== */
-  function mkAudio(){
-    let AC=null, master=null;
-    function ensure(){ if(AC) return; AC=new (window.AudioContext||window.webkitAudioContext)(); master=AC.createGain(); master.gain.value=.6; master.connect(AC.destination); }
-    function tone(f=440,d=.2,v=.25,type='sine'){ if(!AC) return; const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain(); o.type=type;o.frequency.value=f; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(v,t+.01); g.gain.exponentialRampToValueAtTime(.0001,t+d); o.connect(g); g.connect(master); o.start(t); o.stop(t+d+.05); }
-    return {ensure,tone,ctx:()=>AC,master:()=>master};
+  function tone({f=440,d=.15,v=.2,type='sine'}={}){ if(!AC) return; const t=AC.currentTime, o=AC.createOscillator(), g=AC.createGain(); o.type=type; o.frequency.value=f; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(v,t+.01); g.gain.exponentialRampToValueAtTime(.0001,t+d); o.connect(g); g.connect(master); o.start(t); o.stop(t+d+.02); liveNodes.add(o); o.onended=()=>liveNodes.delete(o); }
+  function node(fn){ // create & track custom node graph
+    if(!AC) return null; const n=fn(AC,master); if(n){ liveNodes.add(n); n.onended=()=>liveNodes.delete(n); } return n;
   }
+  return {enable,setMute,stopAll,tone,node,get AC(){return AC}, get master(){return master}, updateBadge};
+})();
+gid('audio_enable').onclick=()=>{ AudioEngine.enable(); };
+gid('audio_mute').onclick=()=>{ AudioEngine.setMute(gid('audio_state').textContent!=='Audio: Muted'); };
+gid('audio_stop').onclick=()=>{ AudioEngine.stopAll(); };
 
-  /* ===== Hub audio buttons ===== */
-  (function(){
-    const A=mkAudio(); const enable=gid('a_enable'), beep=gid('a_beep'), chord=gid('a_chord');
-    enable.addEventListener('click',()=>{ A.ensure(); if(A.ctx() && A.ctx().state==='suspended') A.ctx().resume(); enable.textContent='Audio: On'; });
-    beep.addEventListener('click',()=>{ A.ensure(); if(A.ctx().state==='suspended') A.ctx().resume(); A.tone(660,.15,.22,'triangle'); });
-    chord.addEventListener('click',()=>{ A.ensure(); if(A.ctx().state==='suspended') A.ctx().resume(); [440,550,660].forEach((f,i)=>setTimeout(()=>A.tone(f,.3,.18,'sine'),i*40)); });
-  })();
+/* ========================= Router ========================= */
+const V={hub:gid('v-hub'),arcade:gid('v-arcade'),healing:gid('v-healing'),creator:gid('v-creator'),bible:gid('v-bible'),nft:gid('v-nft')};
+document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{ Object.values(V).forEach(v=>v.classList.remove('active')); V[b.dataset.view].classList.add('active'); if(b.dataset.view==='arcade') bootRunner(); if(b.dataset.view==='healing') bootHealing(); if(b.dataset.view==='creator') bootCreator(); if(b.dataset.view==='bible') bootBible(); if(b.dataset.view==='nft') bootNFT(); }));
 
-  /* ===== Runner (minimal physics, broad input listeners) ===== */
-  let runnerBoot=false;
-  function bootRunner(){ if(runnerBoot) return; runnerBoot=true;
-    const cvs=gid('r_canvas'); const {ctx}=setupCanvas(cvs);
-    const A=mkAudio(); let audioOn=false;
-    gid('r_audio').onclick=()=>{ A.ensure(); if(A.ctx().state==='suspended') A.ctx().resume(); audioOn=true; gid('r_audio').textContent='Audio: On'; };
-    const ui={score:gid('r_score'),shield:gid('r_shield'),pause:gid('r_pause'),reset:gid('r_reset')};
-    const W=()=>cvs.clientWidth||600, H=()=>cvs.clientHeight||300;
-    let paused=false, over=false, score=0, shield=100;
-    const ply={x:120,y:0,w:44,h:56,vy:0,ground:0,duck:0};
-    function reset(){ over=false; paused=false; score=0; shield=100; ply.h=56; const g=(H()-96)|0; ply.ground=g; ply.y=g-ply.h; ply.vy=0; ui.score.textContent='0'; ui.shield.textContent='100%'; }
-    reset();
-    function jump(power=-26){ if(over) return; if(ply.y>=ply.ground-ply.h-0.1){ ply.vy=power; if(audioOn) A.tone(620,.1,.2,'triangle'); } }
-    function duck(){ if(over) return; if(ply.duck>0) return; const feet=ply.y+ply.h; ply.h=32; ply.y=feet-ply.h; ply.duck=16; if(audioOn) A.tone(480,.05,.16,'square'); }
-    // Input: pointer + touch + mouse + swipe-down
-    let startY=null;
-    function rel(e){ const r=cvs.getBoundingClientRect(); return {x:(e.clientX||0)-r.left,y:(e.clientY||0)-r.top}; }
-    cvs.addEventListener('pointerdown',e=>{ const p=rel(e); (p.y>H()*0.35?jump():jump()); startY=e.clientY; e.preventDefault(); },{passive:false});
-    cvs.addEventListener('touchstart',e=>{ const t=e.changedTouches[0]; if(!t) return; const r=cvs.getBoundingClientRect(); const y=t.clientY-r.top; (y>H()*0.35?jump():jump()); startY=t.clientY; e.preventDefault(); },{passive:false});
-    cvs.addEventListener('mousedown',()=>jump());
-    window.addEventListener('pointermove',e=>{ if(startY!=null && e.clientY-startY>60){ duck(); startY=null; }},{passive:true});
-    window.addEventListener('touchmove',e=>{ const t=e.changedTouches&&e.changedTouches[0]; if(startY!=null && t && t.clientY-startY>60){ duck(); startY=null; }},{passive:true});
-    window.addEventListener('pointerup',()=>{ startY=null; },{passive:true});
-    window.addEventListener('touchend',()=>{ startY=null; },{passive:true});
+/* ========================= HUB: Touch test ========================= */
+(()=>{ const cvs=gid('touch_canvas'); const {ctx}=setupCanvas(cvs); const countEl=gid('t_count'), lastEl=gid('t_last'); let count=0;
+  ctx.fillStyle='#050912'; ctx.fillRect(0,0,cvs.clientWidth,cvs.clientHeight);
+  onCanvasTap(cvs,(p,ev)=>{ count++; countEl.textContent=''+count; lastEl.textContent=ev.pointerType||ev.type; ctx.fillStyle='#62d3ff'; ctx.beginPath(); ctx.arc(p.x,p.y,6,0,Math.PI*2); ctx.fill(); });
+})();
 
-    const obstacles=[]; let cd=0;
-    function spawn(){ const g=ply.ground; const r=Math.random(); if(r<0.5) obstacles.push({x:W()+40,y:g-28,w:28,h:28}); else obstacles.push({x:W()+40,y:g-60,w:28,h:60}); }
-    function step(){
-      if(paused||over) return;
-      // gravity
-      ply.vy+=1.0; ply.y+=ply.vy; if(ply.y>ply.ground-ply.h){ ply.y=ply.ground-ply.h; ply.vy=0; if(ply.duck>0){ ply.duck--; if(ply.duck===0){ const feet=ply.y+ply.h; ply.h=56; ply.y=feet-ply.h; } } }
-      // spawn + move
-      if(--cd<=0){ cd=80; spawn(); }
-      for(let i=obstacles.length-1;i>=0;i--){ const o=obstacles[i]; o.x-=6; if(o.x+o.w<-20){ obstacles.splice(i,1); score++; ui.score.textContent=''+score; } }
-      // collide
-      const b={x:ply.x+3,y:ply.y+(ply.duck?8:4),w:ply.w-6,h:(ply.duck?32:ply.h-8)};
-      for(const o of obstacles){ if(o.x<b.x+b.w && o.x+o.w>b.x && o.y<b.y+b.h && o.y+o.h>b.y){ shield=Math.max(0,shield-34); ui.shield.textContent=shield+'%'; if(audioOn) A.tone(220,.12,.22,'square'); if(shield<=0) over=true; } }
-    }
-    function draw(){
-      const w=W(),h=H(); ctx.fillStyle='#050912'; ctx.fillRect(0,0,w,h);
-      // ground line
-      ctx.fillStyle='rgba(255,255,255,.1)'; ctx.fillRect(0,Math.floor(ply.ground+2)+.5,w,2);
-      // player
-      ctx.fillStyle='#62d3ff'; ctx.fillRect(ply.x|0,ply.y|0,ply.w|0,(ply.duck?32:ply.h)|0);
-      // obstacles
-      ctx.fillStyle='#ff49f0'; for(const o of obstacles){ ctx.fillRect(o.x|0,o.y|0,o.w|0,o.h|0); }
-      if(over){ ctx.fillStyle='rgba(0,0,0,.35)'; ctx.fillRect(0,0,w,h); ctx.fillStyle='#ecf3ff'; ctx.font='18px -apple-system,system-ui'; ctx.fillText('Game Over — tap Reset',12,24); }
-    }
-    function loop(){ step(); draw(); requestAnimationFrame(loop); } loop();
-    ui.pause.onclick=()=>{ if(over){ reset(); return; } paused=!paused; ui.pause.textContent=paused?'Resume':'Pause'; if(audioOn) A.tone(paused?440:520,.06,.2); };
-    ui.reset.onclick=()=>{ obstacles.length=0; reset(); if(audioOn) A.tone(720,.08,.22,'sine'); };
-  }
-
-  /* ===== Healing (very safe) ===== */
-  let healBoot=false;
-  function bootHealing(){ if(healBoot) return; healBoot=true;
-    const cvs=gid('h_canvas'); const {ctx}=setupCanvas(cvs);
-    const A=mkAudio(); const enable=gid('h_enable'), pads=[...document.querySelectorAll('.h_pad')], stopB=gid('h_stop');
-    let playing=new Map();
-    enable.onclick=()=>{ A.ensure(); if(A.ctx() && A.ctx().state==='suspended') A.ctx().resume(); enable.textContent='Audio: On'; };
-    pads.forEach(b=>b.addEventListener('click',()=>{ A.ensure(); if(A.ctx().state==='suspended') A.ctx().resume();
-      const f=+b.dataset.f; const key='f'+f;
-      if(playing.has(key)){ try{playing.get(key).stop()}catch{} playing.delete(key); b.classList.remove('on'); return; }
-      const o=A.ctx().createOscillator(), g=A.ctx().createGain(); o.type='sine'; o.frequency.value=f; g.gain.value=.0001; o.connect(g); g.connect(A.master()); o.start(); g.gain.linearRampToValueAtTime(.18, A.ctx().currentTime+.2); playing.set(key,o); b.classList.add('on');
-    }));
-    stopB.onclick=()=>{ playing.forEach(o=>{try{o.stop()}catch{}}); playing.clear(); pads.forEach(p=>p.classList.remove('on')); };
-
-    function viz(){
-      const W=cvs.clientWidth||600,H=cvs.clientHeight||300; ctx.fillStyle='#050912'; ctx.fillRect(0,0,W,H);
-      const t=Date.now()/1000; const r=60+Math.sin(t*0.6)*20; ctx.strokeStyle='rgba(98,211,255,.6)';
-      ctx.beginPath(); ctx.arc(W/2,H/2,r,0,Math.PI*2); ctx.stroke();
-      requestAnimationFrame(viz);
-    } viz();
-  }
-});
-</script>
-</body>
-</html>
+/* ========================= Arcade: Runner (crisper visuals + tuned jump) ========================= */
+let runnerBoot=false;
+function bootRunner(){ if(runnerBoot) return; runnerBoot=true;
+const cvs=gid('r_canvas'); const {ctx}=setupCanvas(cvs);
+const W=()=>cvs.clientWidth,H=()=>cvs.clientHeight;
+const ui={score:gid('r_score'),shield:gid('r_shield'),pause:gid('r_pause'),reset:gid('r_reset')};
+let paused=false, over=false, score=0, shield=100;
+const ply={x:120,y:0,w:44,h:56,vy:0,ground:0,duck:0,trail:[]};

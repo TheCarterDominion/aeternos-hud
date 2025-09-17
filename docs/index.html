@@ -2,46 +2,53 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no, maximum-scale=1"
-/>
-<title>Aeternos — Tap to Slice (stable)</title>
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover,
+               user-scalable=no, maximum-scale=1"/>
+<title>Aeternos — Tap to Slice (stable fullscreen)</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
 <style>
   :root{--ink:#eaf2ff;--mut:#9fb3cc;--a:#62d3ff;--b:#ff49f0;--panel:#0f1a33}
-  html,body{height:100%;margin:0;background:radial-gradient(1200px 800px at 50% 10%, #0b1734, #060a16);color:var(--ink);
-    font-family:-apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial;
-    /* stop iOS quirks */
-    -webkit-text-size-adjust:100%; overscroll-behavior:none;
+  html,body{
+    margin:0;height:100%;background:radial-gradient(1200px 800px at 50% 10%, #0b1734, #060a16);
+    color:var(--ink);font-family:-apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial;
+    -webkit-text-size-adjust:100%;
+    overscroll-behavior:none;          /* stop rubber-band */
+    overflow:hidden;                   /* no scroll */
   }
-  body{touch-action:manipulation; -webkit-user-select:none; -webkit-touch-callout:none; -webkit-tap-highlight-color:transparent;}
-  .wrap{min-height:100dvh; display:flex; align-items:center; justify-content:center; padding:16px;}
-  .card{width:100%;max-width:900px;background:var(--panel);border:1px solid rgba(255,255,255,.12);
-    border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.45);padding:16px}
+  *{touch-action:manipulation}         /* sane default; we’ll override canvas */
+  .screen{
+    position:fixed; inset:0; height:100dvh; /* stable viewport height on iOS */
+    display:flex; align-items:center; justify-content:center; padding:16px;
+  }
+  .card{
+    width:100%; max-width:900px; background:var(--panel);
+    border:1px solid rgba(255,255,255,.12); border-radius:16px;
+    box-shadow:0 10px 30px rgba(0,0,0,.45); padding:16px;
+  }
   h1{margin:0 0 8px 0;font-size:22px;text-shadow:0 0 16px rgba(98,211,255,.35)}
   .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-  .pill{border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:6px 10px;background:rgba(255,255,255,.06);font-size:13px}
+  .pill{border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:6px 10px;background:rgba(255,255,255,.06);font-size:14px}
   .btn{border:2px solid rgba(255,255,255,.6);background:transparent;color:var(--ink);padding:10px 14px;border-radius:12px;font-size:16px}
   .mut{color:var(--mut);font-size:13px}
-  /* Canvas */
-  #live{display:block;width:100%;height:320px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#0b162b;
-    touch-action:none; /* stop scroll/zoom gestures on canvas */ }
-  /* flash on miss */
+  #live{
+    display:block;width:100%;height:320px;border-radius:12px;
+    border:1px solid rgba(255,255,255,.12);background:#0b162b;
+    touch-action:none;                 /* block scroll/zoom on canvas */
+  }
   .flash{position:fixed;inset:0;pointer-events:none;background:rgba(255,70,70,.25);opacity:0;transition:opacity .14s ease}
   .flash.on{opacity:1}
-  /* toggle */
   .toggle{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.25);
     border-radius:999px;padding:6px 10px;background:rgba(255,255,255,.06);font-size:13px}
   .dot{width:10px;height:10px;border-radius:50%;background:#4a5568}
-  input#big:checked + .toggle .dot{background:#6ee7b7}
-  /* hide raw checkbox */
+  #big:checked + .toggle .dot{background:#6ee7b7}
   #big{position:absolute;left:-9999px}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="screen">
   <div class="card">
-    <h1>Aeternos — Tap to Slice (Stable HUD)</h1>
+    <h1>Aeternos — Tap to Slice (Stable)</h1>
     <div class="row" style="margin:6px 0 10px 0">
       <span class="pill">Score: <b id="score">0</b></span>
       <span class="pill">Combo: <b id="combo">0x</b></span>
@@ -49,22 +56,31 @@
       <span class="pill">Touches: <b id="touch">0</b></span>
       <button class="btn" id="pauseBtn" type="button">Pause</button>
       <button class="btn" id="resetBtn" type="button">Reset</button>
-      <!-- Big targets toggle -->
-      <input type="checkbox" id="big">
-      <label class="toggle" for="big"><span class="dot"></span> Big Targets</label>
+      <input type="checkbox" id="big"><label class="toggle" for="big"><span class="dot"></span> Big Targets</label>
+      <button class="btn" id="audioBtn" type="button">Enable Audio</button>
     </div>
 
     <canvas id="live" height="320"></canvas>
-    <p class="mut" style="margin-top:10px">Tap near a blue dash to slice it (particles + points). Miss = red flash & combo reset.</p>
+    <p class="mut" style="margin-top:10px">
+      Tap near a blue dash to slice it (particles + points). Miss = red flash & combo reset. Audio is optional; tap “Enable Audio” once.
+    </p>
   </div>
 </div>
 <div class="flash" id="flash"></div>
 
 <script>
 (() => {
-  // Prevent pinch/double-tap zoom adjustments on iOS
+  /* --------- HARDEN iOS: stop zoom, pinch, rubber-band ---------- */
+  let lastTouchEnd = 0;
   document.addEventListener('gesturestart', e => e.preventDefault(), {passive:false});
   document.addEventListener('dblclick', e => e.preventDefault(), {passive:false});
+  document.addEventListener('touchend', e => {
+    const now = performance.now();
+    if (now - lastTouchEnd < 350) { e.preventDefault(); } // double-tap zoom guard
+    lastTouchEnd = now;
+  }, {passive:false});
+  // Block scroll/drag everywhere (game page)
+  document.addEventListener('touchmove', e => e.preventDefault(), {passive:false});
 
   const cvs = document.getElementById('live');
   const ctx = cvs.getContext('2d', {alpha:false});
@@ -76,7 +92,31 @@
   const resetBtn = document.getElementById('resetBtn');
   const bigToggle = document.getElementById('big');
   const flashEl = document.getElementById('flash');
+  const audioBtn = document.getElementById('audioBtn');
 
+  /* --------- Tiny SFX (optional) --------- */
+  let AC=null, master=null, audioOn=false;
+  function ensureAudio(){
+    if (AC) return;
+    try {
+      AC = new (window.AudioContext||window.webkitAudioContext)();
+      master = AC.createGain(); master.gain.value = 0.18; master.connect(AC.destination);
+      audioOn = true; audioBtn.textContent = 'Audio: On';
+    } catch { audioBtn.textContent = 'Audio: Blocked'; }
+  }
+  function blip(f, dur=0.06, vol=0.35, type='sine'){
+    if (!AC) return;
+    const t = AC.currentTime;
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t);
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol, t+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+    o.connect(g); g.connect(master);
+    o.start(t); o.stop(t+dur+0.05);
+  }
+
+  /* --------- Canvas sizing --------- */
   let DPR = Math.max(1, Math.min(3, window.devicePixelRatio||1));
   function resize() {
     const w = cvs.clientWidth, h = cvs.clientHeight;
@@ -86,13 +126,13 @@
   new ResizeObserver(resize).observe(cvs); resize();
   window.addEventListener('resize', resize);
 
-  // State
+  /* --------- Game state --------- */
   let paused = false;
   let t=0,last=performance.now(),frames=0,acc=0,score=0,touches=0;
   let combo=0, lastHitAt=0;
 
   const lines = [];
-  const fx = []; // particles
+  const fx = [];
 
   function seed() {
     lines.length = 0; fx.length = 0;
@@ -101,8 +141,8 @@
       lines.push({
         x: Math.random()*W,
         y: Math.random()*H,
-        w: 12 + Math.random()*10,
-        s: 0.6 + Math.random()*1.8
+        w: 12 + Math.random()*12,
+        s: 0.7 + Math.random()*1.8
       });
     }
     score = 0; touches = 0; combo = 0; lastHitAt = 0;
@@ -116,16 +156,15 @@
 
     const W = cvs.width/DPR, H = cvs.height/DPR;
     for (const L of lines) {
-      L.x -= L.s * 40 * dt/1000;
+      L.x -= L.s * 44 * dt/1000;
       if (L.x < -L.w) {
-        L.x = W + 20;
+        L.x = W + 24;
         L.y = Math.random()*H;
-        L.w = 12 + Math.random()*10;
-        L.s = 0.6 + Math.random()*1.8;
+        L.w = 12 + Math.random()*12;
+        L.s = 0.7 + Math.random()*1.8;
       }
     }
 
-    // particles
     for (let i=fx.length-1;i>=0;i--) {
       const p = fx[i];
       p.x += p.vx; p.y += p.vy; p.vy += 0.15;
@@ -139,11 +178,9 @@
     const bg=ctx.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#0b1734'); bg.addColorStop(1,'#091024');
     ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
 
-    // lines
-    ctx.fillStyle='rgba(98,211,255,.90)';
+    ctx.fillStyle='rgba(98,211,255,.92)';
     for (const L of lines) { ctx.fillRect(L.x|0, L.y|0, L.w|0, 2); }
 
-    // particles
     ctx.fillStyle='rgba(255,73,240,.95)';
     for (const p of fx) { ctx.fillRect(p.x|0, p.y|0, 2, 2); }
 
@@ -163,29 +200,26 @@
   }
   requestAnimationFrame(loop);
 
+  /* --------- Interactions --------- */
   function sliceAt(clientX, clientY) {
     const rect = cvs.getBoundingClientRect();
     const x = (clientX - rect.left);
     const y = (clientY - rect.top);
-    // hit radius (bigger if toggle on)
     const base = 18, big = 28;
     const radius = (bigToggle.checked ? big : base);
 
     let hits = 0;
     for (let i=lines.length-1;i>=0;i--) {
       const L = lines[i];
-      const cx = L.x + L.w/2;
-      const cy = L.y + 1;
+      const cx = L.x + L.w/2, cy = L.y + 1;
       const dx = (cx - x), dy = (cy - y);
       if (dx*dx + dy*dy <= radius*radius) {
-        // particles
         for (let k=0;k<20;k++){
           fx.push({x:cx,y:cy,vx:(Math.random()-0.5)*3,vy:(Math.random()-1.2)*3,life:30});
         }
-        // respawn that line
         const W = cvs.width/DPR, H = cvs.height/DPR;
         lines.splice(i,1);
-        lines.push({ x: W + 20, y: Math.random()*H, w: 12 + Math.random()*10, s: 0.6 + Math.random()*1.8 });
+        lines.push({ x: W + 24, y: Math.random()*H, w: 12 + Math.random()*12, s: 0.7 + Math.random()*1.8 });
         hits++;
       }
     }
@@ -194,22 +228,20 @@
 
   function onTap(e) {
     touches++; touchEl.textContent = String(touches);
+    if (!audioOn && e.isTrusted) ensureAudio();
     const hits = sliceAt(e.clientX, e.clientY);
     if (hits>0) {
       const now = performance.now();
-      // 1.2s combo window
       if (now - lastHitAt <= 1200) combo++; else combo = 1;
       lastHitAt = now;
-      // score: base * combo multiplier
-      score += hits * Math.max(1, combo);
-      scoreEl.textContent = String(score);
+      const delta = hits * Math.max(1, combo);
+      score += delta; scoreEl.textContent = String(score);
       comboEl.textContent = combo + "x";
+      if (audioOn) blip(660, 0.05, 0.25, 'triangle');
     } else {
-      // miss flash + reset combo
-      flashEl.classList.add('on');
-      setTimeout(()=> flashEl.classList.remove('on'), 120);
-      combo = 0;
-      comboEl.textContent = "0x";
+      flashEl.classList.add('on'); setTimeout(()=> flashEl.classList.remove('on'), 120);
+      combo = 0; comboEl.textContent = "0x";
+      if (audioOn) blip(220, 0.10, 0.2, 'square');
     }
     e.preventDefault();
   }
@@ -217,14 +249,17 @@
   cvs.addEventListener('pointerdown', onTap, {passive:false});
 
   pauseBtn.addEventListener('click', () => {
-    paused = !paused;
-    pauseBtn.textContent = paused ? 'Resume' : 'Pause';
+    paused = !paused; pauseBtn.textContent = paused ? 'Resume' : 'Pause';
+    if (audioOn) blip(paused?440:520, 0.06, 0.2);
   });
 
   resetBtn.addEventListener('click', () => {
-    seed();
-    paused = false;
-    pauseBtn.textContent = 'Pause';
+    seed(); paused = false; pauseBtn.textContent = 'Pause';
+    if (audioOn) blip(720, 0.08, 0.25, 'sine');
+  });
+
+  audioBtn.addEventListener('click', () => {
+    ensureAudio(); if (AC && AC.state === 'suspended') AC.resume();
   });
 })();
 </script>

@@ -1,0 +1,74 @@
+<!doctype html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Aeternos • Audio Diagnostic</title>
+<style>
+html,body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+h1{font-size:18px;margin:12px}
+.wrap{padding:12px;display:grid;gap:10px}
+.btn{font-size:18px;padding:16px;border-radius:12px;border:2px solid #333;background:#0b1734;color:#ecf3ff}
+.pill{display:inline-block; padding:6px 10px; border-radius:999px; border:1px solid #999; margin:4px}
+pre{background:#111;color:#9fe; padding:10px;border-radius:10px; white-space:pre-wrap}
+</style>
+</head>
+<body ontouchstart="">
+<h1>Audio Diagnostic</h1>
+<div class="wrap">
+  <div>
+    <button class="btn" onclick="unlock()">Enable / Unlock</button>
+    <button class="btn" onclick="beep()">Beep (HTML audio)</button>
+    <button class="btn" onclick="tone()">Tone (WebAudio)</button>
+    <button class="btn" onclick="stopAll()">Stop All</button>
+  </div>
+  <div>
+    <span class="pill">AudioContext: <b id="ctx">none</b></span>
+    <span class="pill">state: <b id="state">n/a</b></span>
+    <span class="pill">unlocked: <b id="unl">no</b></span>
+  </div>
+  <pre id="log">Ready.</pre>
+</div>
+
+<audio id="beep" preload="auto">
+  <!-- ~50ms ping wav -->
+  <source src="data:audio/wav;base64,UklGRhQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABYAAAAlAAAAPwAAABkAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==" type="audio/wav">
+</audio>
+
+<script>
+function $(id){return document.getElementById(id)}
+function say(s){ $('log').textContent += '\\n'+s; $('log').scrollTop=$('log').scrollHeight; }
+let AC=null, master=null, live=[];
+function badge(){ $('ctx').textContent = AC?'AudioContext':'none'; $('state').textContent = AC?AC.state:'n/a'; $('unl').textContent = (AC&&AC.state==='running')?'yes':'no'; }
+async function unlock(){
+  try{
+    const el=$('beep');
+    try{ await el.play(); el.pause(); el.currentTime=0; say('HTML audio: OK'); }catch(e){ say('HTML audio: blocked'); }
+    if(!AC){ const C=window.AudioContext||window.webkitAudioContext; if(C){ AC=new C({latencyHint:'interactive'}); master=AC.createGain(); master.gain.value=.7; master.connect(AC.destination); } }
+    if(AC && AC.state!=='running'){ await AC.resume(); }
+    if(AC){ // tiny inaudible blip to cement unlock
+      const o=AC.createOscillator(), g=AC.createGain(); g.gain.value=0.0001; o.connect(g); g.connect(master); o.start(); o.stop(AC.currentTime+0.04);
+      say('WebAudio resume: '+AC.state);
+    }
+  }catch(e){ say('unlock error: '+e); }
+  badge();
+}
+function beep(){
+  try{ $('beep').currentTime=0; $('beep').play(); say('HTML beep played'); }catch(e){ say('HTML beep error: '+e); }
+}
+function tone(){
+  if(!AC){ say('No AudioContext'); badge(); return; }
+  try{
+    const t=AC.currentTime, o=AC.createOscillator(), g=AC.createGain();
+    o.type='sine'; o.frequency.value=660;
+    g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.22,t+.01); g.gain.exponentialRampToValueAtTime(.0001,t+.15);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t+.18);
+    live.push(o); o.onended=()=>live=live.filter(x=>x!==o);
+    say('WebAudio tone scheduled');
+  }catch(e){ say('tone error: '+e); }
+  badge();
+}
+function stopAll(){ try{ $('beep').pause(); }catch{} live.forEach(n=>{try{n.stop(0)}catch{}}); live=[]; say('Stop All'); }
+badge();
+['click','touchstart','mousedown','keydown','visibilitychange'].forEach(ev=>addEventListener(ev,()=>badge(),{passive:true}));
+</script>
+</body></html>

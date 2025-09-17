@@ -2,10 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport"
-  content="width=device-width, initial-scale=1, viewport-fit=cover,
-           user-scalable=no, maximum-scale=1"/>
-<title>Aeternos Pulse Runner — 2025 single-file</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no, maximum-scale=1"/>
+<title>Aeternos Pulse Runner — v2 (hold jump + duck)</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <style>
   :root{
@@ -47,6 +45,7 @@
     </div>
     <div class="right">
       <button class="btn" id="audioBtn" type="button">Enable Audio</button>
+      <button class="btn" id="duckBtn" type="button">Duck</button>
       <button class="btn" id="pauseBtn" type="button">Pause</button>
       <button class="btn" id="resetBtn" type="button">Restart</button>
     </div>
@@ -57,7 +56,7 @@
 
 <script>
 (() => {
-  /* ---------- iOS HARDEN ---------- */
+  /* ---- iOS hardening ---- */
   let lastTouchEnd=0;
   document.addEventListener('gesturestart', e=>e.preventDefault(), {passive:false});
   document.addEventListener('dblclick', e=>e.preventDefault(), {passive:false});
@@ -79,9 +78,10 @@
   const pauseBtn = document.getElementById('pauseBtn');
   const resetBtn = document.getElementById('resetBtn');
   const audioBtn = document.getElementById('audioBtn');
+  const duckBtn  = document.getElementById('duckBtn');
   const flashEl  = document.getElementById('flash');
 
-  /* ---------- Sizing ---------- */
+  /* ---- Sizing ---- */
   let DPR = Math.max(1, Math.min(3, window.devicePixelRatio||1));
   function resize(){
     const w = cvs.clientWidth, h = cvs.clientHeight;
@@ -91,33 +91,41 @@
   new ResizeObserver(resize).observe(cvs); resize();
   addEventListener('resize', resize);
 
-  /* ---------- Audio ---------- */
+  /* ---- Audio ---- */
   let AC=null, master=null, audioOn=false;
   function ensureAudio(){
     if(AC) return;
     try{
       AC = new (window.AudioContext||window.webkitAudioContext)();
-      master = AC.createGain(); master.gain.value = 0.16; master.connect(AC.destination);
+      master = AC.createGain(); master.gain.value = 0.18; master.connect(AC.destination);
       audioOn=true; audioBtn.textContent='Audio: On';
     }catch(e){ audioBtn.textContent='Audio: Blocked'; }
   }
+  function toggleAudio(){
+    if(!AC){ ensureAudio(); return; }
+    audioOn=!audioOn; audioBtn.textContent = audioOn ? 'Audio: On' : 'Audio: Off';
+  }
   function blip(f, dur=0.06, vol=0.35, type='sine'){
-    if(!AC) return;
+    if(!AC || !audioOn) return;
     const t=AC.currentTime, o=AC.createOscillator(), g=AC.createGain();
     o.type=type; o.frequency.setValueAtTime(f,t);
     g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
     o.connect(g); g.connect(master); o.start(t); o.stop(t+dur+0.05);
   }
 
-  /* ---------- World ---------- */
+  /* ---- World ---- */
   const W = () => cvs.width/DPR, H = () => cvs.height/DPR;
   let running=true, paused=false, gameOver=false;
-  let score=0, coins=0, speed=6.0, frames=0, acc=0;
 
-  const ply = { x:120, y:0, w:44, h:56, vy:0, ground:0, inv:0 };
-  const GRAV=1.0, JUMP_MIN=-16, JUMP_MAX=-23;
-  let coyote=0, buffer=0; const COYOTE=10, BUF=10; let bufferedPower=JUMP_MIN;
-  let shield=100; // %
+  // Player coords: y = TOP of the rectangle; ground = FEET Y
+  const ply = { x:120, y:0, w:44, h:56, vy:0, ground:0, inv:0, duck:0 };
+  const GRAV=1.05, GRAV_HOLD=0.48;              // lower gravity while holding for hang time
+  const JUMP_MIN=-18, JUMP_MAX=-26;             // initial jump range
+  const HOLD_MAX_MS=200;                        // max extra lift time while holding
+  const COYOTE=10, BUF=10;                      // leniency frames
+  let coyote=0, buffer=0, holding=false, holdStart=0;
+
+  let score=0, coins=0, speed=6.0, frames=0, acc=0, shield=100;
 
   const obs=[], gold=[], fx=[];
   let spawnCD=0, goldCD=60;
@@ -126,30 +134,39 @@
     running=true; paused=false; gameOver=false;
     score=0; coins=0; speed=6.0; frames=0; acc=0; shield=100;
     obs.length=0; gold.length=0; fx.length=0;
-    const g = Math.floor(H()-120); ply.ground=g; ply.y=g; ply.vy=0; ply.inv=0;
-    coyote=0; buffer=0; bufferedPower=JUMP_MIN;
+    const feet = Math.floor(H()-90);            // ground height (visual floor)
+    ply.ground=feet; ply.h=56; ply.y=feet-ply.h; ply.vy=0; ply.inv=0; ply.duck=0;
+    coyote=0; buffer=0; holding=false; holdStart=0;
     hud.score.textContent='0'; hud.coins.textContent='0'; hud.spd.textContent='1.0x'; hud.shield.textContent='100%';
   }
   reset();
 
-  function requestJump(power){
-    bufferedPower = Math.max(JUMP_MIN, Math.min(JUMP_MAX, power||JUMP_MIN));
+  function requestJump(initialV){
+    // Buffers and coyote pipe
     buffer = BUF;
-  }
-  function consumeJump(){
-    ply.vy = bufferedPower; coyote=0; buffer=0;
-    if(audioOn) blip(640, 0.05, 0.22, 'triangle');
-    for(let i=0;i<26;i++){ fx.push({x:ply.x+ply.w/2,y:ply.y+ply.h,vx:(Math.random()-0.5)*4,vy:-Math.random()*3-1,life:42,col:'#62d3ff'}); }
+    // apply immediately if on ground/coyote
+    const onGround = (ply.y >= ply.ground - ply.h - 0.1);
+    if(onGround || coyote>0){
+      ply.vy = initialV;
+      coyote=0; buffer=0; holding=true; holdStart=performance.now();
+      if(audioOn) blip(640, 0.05, 0.22, 'triangle');
+      for(let i=0;i<22;i++){ fx.push({x:ply.x+ply.w/2,y:ply.y+ply.h,vx:(Math.random()-0.5)*4,vy:-Math.random()*3-1,life:42,col:'#62d3ff'}); }
+    }
   }
 
   function spawnObstacle(){
-    const t=Math.random();
-    const y=ply.ground;
-    if(t<0.45) obs.push({x:W()+40, y:y-26, w:28, h:26, t:'short'});
-    else if(t<0.8) obs.push({x:W()+40, y:y-56, w:26, h:56, t:'tall'});
-    else { // pair
-      obs.push({x:W()+40, y:y-24, w:22, h:24, t:'pair'});
-      obs.push({x:W()+96, y:y-24, w:22, h:24, t:'pair'});
+    const g = ply.ground;
+    const r = Math.random();
+    if(r < 0.4){ // short block
+      obs.push({x:W()+40, y:g-26, w:28, h:26, t:'short'});
+    } else if(r < 0.7){ // tall block
+      obs.push({x:W()+40, y:g-56, w:26, h:56, t:'tall'});
+    } else if(r < 0.85){ // low bar (duck)
+      obs.push({x:W()+40, y:g-18, w:48, h:14, t:'low'});
+    } else { // pair (double hop)
+      const d = 52;
+      obs.push({x:W()+40,  y:g-28, w:24, h:28, t:'pair'});
+      obs.push({x:W()+40+d, y:g-28, w:24, h:28, t:'pair'});
     }
   }
   function spawnCoin(){
@@ -159,99 +176,117 @@
   function step(dt){
     if(!running || paused) return;
 
-    // bg speed ramp by score
-    const mult = 1 + Math.min(1.5, score/200);
+    // Speed ramp
+    const mult = 1 + Math.min(1.6, score/220);
     const spd = speed * mult;
     hud.spd.textContent = (spd/6).toFixed(1)+'x';
 
-    // physics
-    const onGround = (ply.y>=ply.ground-0.1);
+    // Input buffer (in air)
+    const onGround = (ply.y >= ply.ground - ply.h - 0.1);
     if(onGround) coyote=COYOTE; else coyote=Math.max(0,coyote-1);
-    if(buffer>0 && (onGround || coyote>0)) consumeJump();
-    buffer = Math.max(0, buffer-1);
+    if(buffer>0 && (onGround || coyote>0)){ // buffered tap fired while landing
+      // default mid-strong jump if buffered
+      requestJump(JUMP_MAX+2);
+    } else {
+      buffer = Math.max(0, buffer-1);
+    }
 
-    ply.vy += GRAV; ply.y += ply.vy;
-    if(ply.y>ply.ground){ ply.y=ply.ground; ply.vy=0; }
+    // Variable gravity: hold = lighter gravity for hang time
+    const holdingMs = holding ? (performance.now()-holdStart) : 0;
+    const grav = (holding && holdingMs < HOLD_MAX_MS && ply.vy < 0) ? GRAV_HOLD : GRAV;
 
-    // obstacles
-    if(--spawnCD<=0){ spawnCD = Math.max(32, 90 - Math.floor(score*0.7)); spawnObstacle(); }
+    // Apply physics
+    ply.vy += grav;
+    ply.y  += ply.vy;
+    if(ply.y > ply.ground - ply.h){ ply.y = ply.ground - ply.h; ply.vy = 0; holding=false; }
+
+    // Duck decay
+    if(ply.duck>0){ ply.duck--; if(ply.duck===0){ // pop back up keeping feet on ground
+      const oldFeet = ply.y + ply.h; ply.h = 56; ply.y = oldFeet - ply.h;
+    }}
+
+    // Obstacles
+    if(--spawnCD<=0){ spawnCD = Math.max(28, 90 - Math.floor(score*0.7)); spawnObstacle(); }
     let hit=false;
+    const hitbox = () => ({x:ply.x+2, y:ply.y+(ply.duck?8:4), w:ply.w-4, h:(ply.duck?32:ply.h-8)});
     for(let i=obs.length-1;i>=0;i--){
       const o=obs[i]; o.x -= spd;
-      // collision (AABB)
-      const hitbox = {x:ply.x+2, y:ply.y+4, w:ply.w-4, h:ply.h-8}; // slight forgiveness
-      if(o.x < hitbox.x+hitbox.w && o.x+o.w>hitbox.x && o.y<hitbox.y+hitbox.h && o.y+o.h>hitbox.y){
-        if(ply.inv<=0){ hit=true; }
+      const hb = hitbox();
+      // AABB
+      if(o.x < hb.x+hb.w && o.x+o.w > hb.x && o.y < hb.y+hb.h && o.y+o.h > hb.y){
+        if(ply.inv<=0){ hit = true; }
       }
-      if(o.x+o.w<-40){ obs.splice(i,1); score++; hud.score.textContent=''+score; }
+      if(o.x+o.w < -40){ obs.splice(i,1); score++; hud.score.textContent=''+score; }
     }
     if(hit){
       shield = Math.max(0, shield-34);
       hud.shield.textContent = shield+'%';
       flashEl.classList.add('on'); setTimeout(()=>flashEl.classList.remove('on'), 120);
-      if(audioOn) blip(220, 0.12, 0.25, 'square');
+      blip(220, 0.12, 0.25, 'square');
       for(let i=0;i<30;i++){ fx.push({x:ply.x+ply.w/2,y:ply.y+ply.h/2,vx:(Math.random()-0.5)*5,vy:(Math.random()-0.8)*5,life:36,col:'#ff4df0'}); }
-      ply.inv = 24; // brief i-frames
+      ply.inv = 24;
       if(shield<=0){ gameOver=true; running=false; }
     }
     ply.inv = Math.max(0, ply.inv-1);
 
-    // coins
+    // Coins
     if(--goldCD<=0){ goldCD = 60 + (Math.random()*60)|0; spawnCoin(); }
     for(let i=gold.length-1;i>=0;i--){
       const c=gold[i]; c.x -= spd;
-      // coin pickup simple circle/rect overlap
-      const cx = c.x, cy = c.y, r = c.r;
-      if(cx+r>ply.x && cx-r<ply.x+ply.w && cy+r>ply.y && cy-r<ply.y+ply.h){
+      const cx=c.x, cy=c.y, r=c.r;
+      if(cx+r>ply.x && cx-r<ply.x+ply.w && cy+r>ply.y && cy-r<ply.y+ (ply.duck?32:ply.h)){
         coins++; hud.coins.textContent=''+coins; gold.splice(i,1);
-        if(audioOn) blip(880, 0.05, 0.22, 'sine');
+        blip(880, 0.05, 0.22, 'sine');
         for(let k=0;k<16;k++){ fx.push({x:cx,y:cy,vx:(Math.random()-0.5)*3,vy:(Math.random()-1.2)*3,life:28,col:'#ffd76a'}); }
       } else if (c.x+r<-20){ gold.splice(i,1); }
     }
 
-    // particles
+    // Particles
     for(let i=fx.length-1;i>=0;i--){
       const p=fx[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=0.15; p.life--; if(p.life<=0) fx.splice(i,1);
     }
   }
 
-  /* ---------- Render ---------- */
+  /* ---- Render ---- */
   function sky(){
     const w=W(), h=H();
-    // gradient
     const g=ctx.createLinearGradient(0,0,0,h); g.addColorStop(0,'#0b1734'); g.addColorStop(1,'#091024');
     ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
-    // parallax skyline
+
+    // crisp parallax skyline
     const t = performance.now()*0.00025;
     for(let layer=0; layer<3; layer++){
-      const alpha = [0.08,0.10,0.14][layer];
-      const scale = [0.25,0.5,0.8][layer];
+      const alpha = [0.10,0.12,0.16][layer];
+      const scale = [0.25, 0.50, 0.85][layer];
       ctx.save();
       ctx.translate(-(t* (120+layer*60) % w),0);
       ctx.fillStyle = `rgba(98,211,255,${alpha})`;
       for(let i=0;i<14;i++){
         const bw=40+((i*73)%120), bh=100+((i*51)%120), x=(i*130)%w;
-        ctx.fillRect(x, H()-120*scale - bh*scale, bw*scale, bh*scale);
+        ctx.fillRect(x, h-100*scale - bh*scale, bw*scale, bh*scale);
       }
       ctx.restore();
     }
-    // ground line
-    ctx.fillStyle='rgba(255,255,255,.1)'; ctx.fillRect(0, ply.ground+ply.h, w, 8);
+
+    // ground grid
+    ctx.fillStyle='rgba(255,255,255,.08)'; ctx.fillRect(0, ply.ground+2, w, 2);
+    const step=28; ctx.fillStyle='rgba(98,211,255,.08)';
+    for(let x=0;x<w;x+=step){ ctx.fillRect(x, ply.ground+4, 2, 40); }
   }
 
   function draw(){
     const w=W(), h=H();
     sky();
 
-    // obstacles
+    // Obstacles
     for(const o of obs){
       const grd=ctx.createLinearGradient(o.x,o.y,o.x,o.y+o.h);
       grd.addColorStop(0,'#62d3ff'); grd.addColorStop(1,'#ff49f0');
-      ctx.fillStyle=grd; ctx.fillRect(o.x,o.y,o.w,o.h);
-      ctx.strokeStyle='rgba(255,255,255,.25)'; ctx.strokeRect(o.x-0.5,o.y-0.5,o.w+1,o.h+1);
+      ctx.fillStyle=grd; ctx.fillRect(o.x|0,o.y|0,o.w|0,o.h|0);
+      ctx.strokeStyle='rgba(255,255,255,.25)'; ctx.strokeRect((o.x-0.5)|0,(o.y-0.5)|0,(o.w+1)|0,(o.h+1)|0);
     }
 
-    // coins
+    // Coins
     for(const c of gold){
       const g=ctx.createRadialGradient(c.x,c.y,1,c.x,c.y,c.r);
       g.addColorStop(0,'#fff2b8'); g.addColorStop(1,'#ffd76a');
@@ -259,16 +294,18 @@
       ctx.strokeStyle='rgba(255,255,255,.4)'; ctx.stroke();
     }
 
-    // player
-    const pg=ctx.createLinearGradient(0,ply.y,0,ply.y+ply.h);
+    // Player (neon block + shadow)
+    const pg=ctx.createLinearGradient(0,ply.y,0,ply.y+ (ply.duck?32:ply.h));
     pg.addColorStop(0,'#62d3ff'); pg.addColorStop(1,'#ff49f0');
-    ctx.fillStyle=pg; ctx.fillRect(ply.x,ply.y,ply.w,ply.h);
-    if(ply.inv>0){ ctx.strokeStyle='rgba(255,255,255,.6)'; ctx.strokeRect(ply.x-1,ply.y-1,ply.w+2,ply.h+2); }
+    ctx.fillStyle=pg; ctx.fillRect(ply.x|0, ply.y|0, ply.w|0, (ply.duck?32:ply.h)|0);
+    ctx.globalAlpha=0.35; ctx.fillStyle='#62d3ff'; ctx.fillRect((ply.x-6)|0, (ply.y+ (ply.duck?32:ply.h) -3)|0, (ply.w+12)|0, 3);
+    ctx.globalAlpha=1;
+    if(ply.inv>0){ ctx.strokeStyle='rgba(255,255,255,.6)'; ctx.strokeRect((ply.x-1)|0,(ply.y-1)|0,(ply.w+2)|0,((ply.duck?32:ply.h)+2)|0); }
 
-    // particles
+    // Particles
     for(const p of fx){ ctx.fillStyle=p.col; ctx.fillRect(p.x|0,p.y|0,2,2); }
 
-    // game over overlay
+    // Game over
     if(gameOver){
       ctx.fillStyle='rgba(0,0,0,.35)'; ctx.fillRect(0,0,w,h);
       ctx.fillStyle='#ecf3ff'; ctx.font='24px -apple-system,system-ui,Segoe UI';
@@ -278,7 +315,7 @@
     }
   }
 
-  /* ---------- Loop ---------- */
+  /* ---- Loop ---- */
   let last=performance.now();
   function loop(ts){
     const dt=ts-last; last=ts;
@@ -289,27 +326,49 @@
   }
   requestAnimationFrame(loop);
 
-  /* ---------- Input ---------- */
-  function tap(ev){
-    if(!running){ running=true; }
+  /* ---- Input ---- */
+  function startJumpFromTap(ev){
     if(gameOver) return;
-    if(!audioOn && ev.isTrusted) ensureAudio();
+    if(!AC && ev.isTrusted) ensureAudio();
 
-    // Tap higher = stronger jump
+    // initial jump power based on tap height (higher tap = stronger)
     const r=cvs.getBoundingClientRect();
-    const y=ev.clientY; // pointerdown uses clientY
-    const rel = Math.max(0, Math.min(1, 1 - ((y-r.top)/r.height))); // 0 bottom .. 1 top
-    const power = JUMP_MIN + (JUMP_MAX-JUMP_MIN)*rel;
-    requestJump(power);
-
-    ev.preventDefault();
+    const rel = Math.max(0, Math.min(1, 1 - ((ev.clientY-r.top)/r.height))); // 0 bottom..1 top
+    const initialV = JUMP_MIN + (JUMP_MAX-JUMP_MIN)*rel;
+    requestJump(initialV);
   }
-  cvs.addEventListener('pointerdown', tap, {passive:false});
-  addEventListener('keydown', (e)=>{ if(e.code==='Space'){ e.preventDefault(); requestJump(JUMP_MAX); }});
+  function endHold(){ holding=false; }
 
-  pauseBtn.onclick=()=>{ paused=!paused; pauseBtn.textContent=paused?'Resume':'Pause'; if(audioOn) blip(paused?440:520,0.06,0.2); };
-  resetBtn.onclick=()=>{ reset(); if(audioOn) blip(720,0.08,0.25,'sine'); };
-  audioBtn.onclick=()=>{ ensureAudio(); if(AC && AC.state==='suspended') AC.resume(); };
+  // Duck: button or swipe down gesture
+  function doDuck(){
+    if(ply.duck>0) return;
+    // compress to 32px height for 18 frames
+    const feet = ply.y + ply.h;
+    ply.h = 32; ply.y = feet - ply.h; ply.duck = 18;
+    blip(480, 0.04, 0.18, 'square');
+  }
+  duckBtn.onclick = doDuck;
+
+  cvs.addEventListener('pointerdown', (e)=>{ startJumpFromTap(e); e.preventDefault(); }, {passive:false});
+  cvs.addEventListener('pointerup',   (e)=>{ endHold(); }, {passive:true});
+  cvs.addEventListener('pointercancel',(e)=>{ endHold(); }, {passive:true});
+
+  // swipe down = duck
+  let swipeY=null;
+  cvs.addEventListener('pointerdown', (e)=>{ swipeY=e.clientY; }, {passive:true});
+  cvs.addEventListener('pointermove', (e)=>{
+    if(swipeY!==null && e.clientY - swipeY > 60){ doDuck(); swipeY=null; }
+  }, {passive:true});
+  cvs.addEventListener('pointerup', ()=>{ swipeY=null; }, {passive:true});
+
+  addEventListener('keydown', (e)=>{
+    if(e.code==='Space'){ e.preventDefault(); requestJump(JUMP_MAX); }
+    if(e.code==='ArrowDown'){ e.preventDefault(); doDuck(); }
+  });
+
+  pauseBtn.onclick=()=>{ paused=!paused; pauseBtn.textContent=paused?'Resume':'Pause'; blip(paused?440:520,0.06,0.2); };
+  resetBtn.onclick=()=>{ reset(); blip(720,0.08,0.25,'sine'); };
+  audioBtn.onclick=()=>{ toggleAudio(); if(AC && AC.state==='suspended') AC.resume(); };
 
 })();
 </script>

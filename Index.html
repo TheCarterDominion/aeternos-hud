@@ -2,249 +2,93 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no"/>
-<title>Aeternos • Godware/GodTech Mega-Suite v2 (100-fold)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"/>
+<title>Aeternos • Safe Mode v4 (Audio & iPad Touch Fix)</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <style>
-:root{
-  --ink:#ecf3ff; --mut:#9fb3cc; --a:#62d3ff; --b:#ff49f0; --gold:#ffd76a;
-  --panel:#0f1a33; --bg1:#050916; --bg2:#01020a; --glow:rgba(98,211,255,.6)
-}
-html,body{margin:0;height:100%;background:radial-gradient(1600px 1000px at 50% 8%,var(--bg1),var(--bg2));
-  color:var(--ink);font-family:-apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial;-webkit-text-size-adjust:100%;
-  overscroll-behavior:none;overflow:hidden}
-*{touch-action:manipulation}
-button{cursor:pointer}
-.app{position:fixed;inset:0;height:100dvh;display:flex;flex-direction:column}
-.top{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;gap:10px}
-h1{margin:0;font-size:18px;text-shadow:0 0 18px var(--glow)}
+:root{--ink:#ecf3ff;--mut:#9fb3cc;--a:#62d3ff;--b:#ff49f0;--bg:#050916;--panel:#0f1a33}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;background:radial-gradient(1600px 1000px at 50% 8%,#060b1c,#02040c);color:var(--ink);
+  font-family:-apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial; -webkit-text-size-adjust:100%;
+  overscroll-behavior:none}
+body,button{user-select:none;-webkit-user-select:none}
+.app{position:fixed;inset:0;display:flex;flex-direction:column}
+.top{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:10px 12px}
+h1{margin:0;font-size:18px;text-shadow:0 0 14px rgba(98,211,255,.6)}
 .nav{display:flex;gap:8px;flex-wrap:wrap}
-.btn{border:2px solid rgba(255,255,255,.7);background:transparent;color:var(--ink);padding:8px 10px;border-radius:12px;font-size:14px;text-decoration:none}
+.btn{border:2px solid rgba(255,255,255,.7);background:transparent;color:var(--ink);padding:8px 10px;border-radius:12px;font-size:14px}
+.btn.small{padding:6px 8px;font-size:12px;border-radius:10px}
 .pill{border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:5px 9px;background:rgba(255,255,255,.06);font-size:12px}
 .panel{flex:1;display:none}
 .panel.active{display:block}
 .card{height:100%;display:flex;align-items:center;justify-content:center;padding:12px}
-.box{width:100%;max-width:1350px;background:var(--panel);border:1px solid rgba(255,255,255,.12);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.45);padding:12px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:8px}
-.tile{position:relative;background:#091024;border:1px solid rgba(255,255,255,.12);border-radius:16px;overflow:hidden}
-.hero{height:140px;position:relative}
-.fx{position:absolute;inset:0;background:
-  radial-gradient(rgba(255,255,255,.12) 1px,transparent 2px),
-  linear-gradient(90deg, rgba(98,211,255,.18), transparent 60%);
-  background-size:26px 26px,100% 100%;animation:par 12s linear infinite}
-@keyframes par{from{background-position:0 0,0 0}to{background-position:-1600px 0,0 0}}
-.tile .title{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;gap:10px}
+.box{width:100%;max-width:1100px;background:var(--panel);border:1px solid rgba(255,255,255,.12);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.45);padding:12px}
+.frame{width:100%;height:420px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:#050912;position:relative;overflow:hidden}
+canvas{display:block;width:100%;height:100%;background:#050912;border-radius:12px;touch-action:manipulation}
+.badge{position:absolute;top:8px;left:8px;background:rgba(98,211,255,.14);border:1px solid rgba(98,211,255,.5);padding:4px 8px;border-radius:999px;font-size:12px}
+.hud{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0 10px 0}
 .mut{color:var(--mut);font-size:12px}
 
-/* Frames */
-.frame{width:100%;height:420px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:#050912;position:relative;overflow:hidden}
-canvas{display:block;width:100%;height:100%;background:#050912;border-radius:12px;touch-action:none}
-.scan{position:absolute;inset:0;pointer-events:none;mix-blend-mode:overlay;background:
-  repeating-linear-gradient(180deg, rgba(255,255,255,.045) 0 1px, transparent 1px 3px)}
-.badge{position:absolute;top:8px;left:8px;background:rgba(98,211,255,.14);border:1px solid rgba(98,211,255,.5);padding:4px 8px;border-radius:999px;font-size:12px}
-.flash{position:fixed;inset:0;pointer-events:none;background:rgba(255,70,70,.28);opacity:0;transition:opacity .12s ease}
-.flash.on{opacity:1}
+/* Fullscreen gate */
+.gate{position:fixed;inset:0;background:linear-gradient(180deg,#07122b,#050912 60%);display:flex;align-items:center;justify-content:center;
+  z-index:9999}
+.gate_inner{max-width:560px;text-align:center;border:1px solid rgba(255,255,255,.15);background:#0f1a33;border-radius:18px;padding:18px;box-shadow:0 12px 36px rgba(0,0,0,.5)}
+.gate h2{margin:0 0 8px 0}
+.gate p{margin:6px 0;color:var(--mut)}
+.gate .btn{margin-top:8px}
 
-/* HUD */
-.hud{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0 10px 0}
-.btn.small{padding:6px 8px;font-size:12px;border-radius:10px}
-
-/* Layout helpers */
-.two{display:grid;grid-template-columns:1.2fr .8fr;gap:12px}
-.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-@media (max-width:1000px){ .two{grid-template-columns:1fr} .three{grid-template-columns:1fr} }
-
-/* Inputs */
-textarea, input, select{background:#0b1734;border:1px solid rgba(255,255,255,.15);border-radius:10px;color:var(--ink);padding:9px}
-pre{white-space:pre-wrap;line-height:1.6;margin:0}
-
-/* TicTacToe */
-.tt{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.tt .sq{height:90px;border:2px solid rgba(255,255,255,.5);border-radius:10px;background:#0d1428;font-size:38px;display:flex;align-items:center;justify-content:center}
-.tt .sq.win{background:rgba(98,211,255,.25)}
-
-/* Dominoes */
-.dominoBoard{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
-.dominoTile{height:64px;background:#0d1428;border:1px solid rgba(255,255,255,.3);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
-
-/* Bowling */
-.lane{position:relative;height:420px;background:linear-gradient(180deg,#0a1328,#0a1328);border-radius:12px;overflow:hidden}
-.pin{position:absolute;width:10px;height:28px;background:#fff;border-radius:6px 6px 3px 3px;box-shadow:0 0 8px rgba(255,255,255,.6)}
-.ball{position:absolute;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,#62d3ff,#ff49f0);box-shadow:0 0 12px rgba(98,211,255,.6)}
-
-/* Pinball */
-.pbWrap{position:relative;height:420px;background:#061024;border-radius:12px;overflow:hidden}
-.pbBtn{position:absolute;bottom:10px;width:80px;height:28px;border:2px solid rgba(255,255,255,.7);border-radius:12px;background:transparent;color:#fff}
-.pbBtn.left{left:10px} .pbBtn.right{right:10px}
-
-/* Bible */
-.bibleWrap{display:grid;grid-template-columns:260px 1fr;gap:12px}
-@media (max-width:900px){ .bibleWrap{grid-template-columns:1fr} }
-
-/* Creator */
-.pad{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}
-.cell{height:32px;border:1px solid rgba(255,255,255,.2);border-radius:8px;background:#0d1428}
-.cell.on{background:linear-gradient(180deg,#62d3ff,#ff49f0)}
-.slider{width:120px}
-
-/* Memory */
-.mem{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.mem .card{height:80px;border-radius:10px;border:2px solid rgba(255,255,255,.4);background:#0d1428;display:flex;justify-content:center;align-items:center;font-size:22px}
-.mem .card.open{background:linear-gradient(180deg,#62d3ff,#ff49f0);color:#000}
-.mem .card.done{background:rgba(98,211,255,.25)}
-/* SaaS / Dev */
-.console{font-family:ui-monospace,Consolas,Menlo,monospace;background:#0b1734;border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:10px;height:220px;overflow:auto}
+/* grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.tile{background:#091024;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:12px}
+.ok{color:#5cffb1}.warn{color:#ffd76a}.err{color:#ff6b6b}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="top">
-    <h1>Aeternos • Godware/GodTech Mega-Suite v2 — “Behold, I make all things new.”</h1>
+    <h1>Aeternos — Safe Mode v4</h1>
     <div class="nav">
       <button class="btn" data-view="hub">Hub</button>
-      <button class="btn" data-view="arcade">Arcade</button>
+      <button class="btn" data-view="runner">Runner</button>
       <button class="btn" data-view="healing">Healing</button>
-      <button class="btn" data-view="bible">Bible</button>
-      <button class="btn" data-view="creator">Creator</button>
-      <button class="btn" data-view="worlds">Worlds</button>
-      <button class="btn" data-view="nft">NFTs</button>
-      <button class="btn" data-view="saas">SaaS</button>
+      <button class="btn" data-view="diag">Diagnostics</button>
+    </div>
+    <div>
+      <button class="btn small" id="audio_stop">Stop All</button>
+      <span class="pill" id="audio_state">Audio: Off</span>
     </div>
   </div>
 
   <!-- HUB -->
   <section id="v-hub" class="panel active">
     <div class="card"><div class="box">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
-        <div>
-          <div style="font-weight:700;font-size:18px">Choose a path</div>
-          <div class="mut">One file • iPad-safe • Touch-first • Crisp neon vector art • Music engine (tap Enable Audio per tab).</div>
-        </div>
-        <div>
-          <span class="pill">Arcade x6</span>
-          <span class="pill">Healing Pads</span>
-          <span class="pill">Bible & Study</span>
-          <span class="pill">Creator Lab</span>
-          <span class="pill">Worlds & NFTs</span>
-          <span class="pill">SaaS/Dev</span>
-        </div>
-      </div>
       <div class="grid">
-        <div class="tile"><div class="hero"><div class="fx"></div></div>
-          <div class="title"><div><div style="font-weight:600">Arcade Kingdom</div><div class="mut">Runner • Slice • TicTacToe • Memory • Dominoes • Bowling • Pinball</div></div>
-            <button class="btn" data-view="arcade">Enter</button></div>
+        <div class="tile">
+          <div style="font-weight:700;margin-bottom:6px">Touch Test</div>
+          <div class="frame"><div class="badge">Tap / Touch / Mouse</div><canvas id="touch_canvas" height="240"></canvas></div>
+          <div class="hud"><span class="pill">Touches <b id="t_count">0</b></span><span class="pill">Last <b id="t_last">—</b></span></div>
+          <div class="mut">If this increments and dots appear, input is good.</div>
         </div>
-        <div class="tile"><div class="hero"><div class="fx"></div></div>
-          <div class="title"><div><div style="font-weight:600">Healing & Ministry</div><div class="mut">Solfeggio • 432/528 • Prayer console</div></div>
-            <button class="btn" data-view="healing">Open</button></div>
-        </div>
-        <div class="tile"><div class="hero"><div class="fx"></div></div>
-          <div class="title"><div><div style="font-weight:600">Bible / Study</div><div class="mut">Genesis 1 • John 1 • Romans 8 • search</div></div>
-            <button class="btn" data-view="bible">Study</button></div>
-        </div>
-        <div class="tile"><div class="hero"><div class="fx"></div></div>
-          <div class="title"><div><div style="font-weight:600">Creator Lab</div><div class="mut">Multi-track mini-DAW • BPM • pads</div></div>
-            <button class="btn" data-view="creator">Create</button></div>
-        </div>
-        <div class="tile"><div class="hero"><div class="fx"></div></div>
-          <div class="title"><div><div style="font-weight:600">Worlds & Sims</div><div class="mut">City walk • Crystal chamber</div></div>
-            <button class="btn" data-view="worlds">Explore</button></div>
-        </div>
-        <div class="tile"><div class="hero"><div class="fx"></div></div>
-          <div class="title"><div><div style="font-weight:600">NFTs / Digital</div><div class="mut">Artifacts • Scrolls • Export PNG</div></div>
-            <button class="btn" data-view="nft">Gallery</button></div>
-        </div>
-        <div class="tile"><div class="hero"><div class="fx"></div></div>
-          <div class="title"><div><div style="font-weight:600">SaaS / Dev</div><div class="mut">Console • Orchestrations • Editor</div></div>
-            <button class="btn" data-view="saas">Launch</button></div>
+        <div class="tile">
+          <div style="font-weight:700;margin-bottom:6px">Quick Start</div>
+          <div class="mut">If you ever get a stuck hum, press <b>Stop All</b> (top-right).</div>
+          <div class="mut">Audio unlock is handled by the big “Tap to Start” screen at load.</div>
         </div>
       </div>
     </div></div>
   </section>
 
-  <!-- ARCADE -->
-  <section id="v-arcade" class="panel">
+  <!-- RUNNER -->
+  <section id="v-runner" class="panel">
     <div class="card"><div class="box">
-      <div class="three">
-        <div>
-          <div class="hud">
-            <span class="pill">Score <b id="r_score">0</b></span>
-            <span class="pill">Stars <b id="r_coins">0</b></span>
-            <span class="pill">Speed <b id="r_spd">1.0x</b></span>
-            <span class="pill">FPS <b id="r_fps">--</b></span>
-            <span class="pill">Shield <b id="r_shield">100%</b></span>
-            <button class="btn small" id="r_audio">Enable Audio</button>
-            <button class="btn small" id="r_duck">Duck</button>
-            <button class="btn small" id="r_pause">Pause</button>
-            <button class="btn small" id="r_reset">Restart</button>
-          </div>
-          <div class="frame">
-            <div class="badge">Pulse Runner — City of Light</div>
-            <canvas id="r_canvas" height="420"></canvas>
-            <div class="scan"></div>
-          </div>
-        </div>
-        <div>
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div style="font-weight:700">Neon Slice</div>
-            <div>
-              <button class="btn small" id="s_reset">Reset</button>
-              <button class="btn small" id="s_pause">Pause</button>
-            </div>
-          </div>
-          <div class="frame">
-            <div class="badge">Tap to slice</div>
-            <canvas id="s_canvas" height="420"></canvas>
-            <div class="scan"></div>
-          </div>
-          <div class="mut" style="margin-top:6px">Hits boost combo. Miss flashes red. Tap after game over to restart.</div>
-        </div>
-        <div>
-          <div style="font-weight:700;margin-bottom:6px">Tic-Tac-Toe (CPU)</div>
-          <div class="tt">
-            <button class="sq" data-i="0"></button><button class="sq" data-i="1"></button><button class="sq" data-i="2"></button>
-            <button class="sq" data-i="3"></button><button class="sq" data-i="4"></button><button class="sq" data-i="5"></button>
-            <button class="sq" data-i="6"></button><button class="sq" data-i="7"></button><button class="sq" data-i="8"></button>
-          </div>
-          <div style="margin-top:6px;display:flex;gap:8px;align-items:center">
-            <button class="btn small" id="tt_reset">Reset</button>
-            <div class="mut" id="tt_status">You are X. Good luck!</div>
-          </div>
-          <div class="sep" style="height:10px"></div>
-          <div style="font-weight:700;margin-bottom:6px">Memory Cards</div>
-          <div class="mem" id="m_grid"></div>
-          <div style="margin-top:6px"><button class="btn small" id="m_new">New Deck</button> <span class="pill">Moves <b id="m_moves">0</b></span> <span class="pill">Matches <b id="m_matches">0</b>/8</span></div>
-        </div>
+      <div class="hud">
+        <span class="pill">Score <b id="r_score">0</b></span>
+        <span class="pill">Shield <b id="r_shield">100%</b></span>
+        <button class="btn small" id="r_pause">Pause</button>
+        <button class="btn small" id="r_reset">Restart</button>
+        <span class="mut">Tap to jump • swipe down to duck</span>
       </div>
-
-      <div class="two" style="margin-top:12px">
-        <div>
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div style="font-weight:700">Dominoes (toy)</div>
-            <div><button class="btn small" id="d_draw">Draw</button> <button class="btn small" id="d_reset">New</button></div>
-          </div>
-          <div class="dominoBoard" id="d_board"></div>
-          <div class="mut" id="d_status" style="margin-top:6px">Match the ends.</div>
-        </div>
-        <div>
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div style="font-weight:700">Bowling (swipe to roll)</div>
-            <button class="btn small" id="bw_reset">Reset</button>
-          </div>
-          <div class="lane" id="bw_lane"></div>
-          <div class="mut" id="bw_score" style="margin-top:6px">Score: 0</div>
-          <div class="sep" style="height:10px"></div>
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div style="font-weight:700">Pinball (tap flippers)</div>
-            <button class="btn small" id="pb_reset">Reset</button>
-          </div>
-          <div class="pbWrap" id="pb_wrap">
-            <canvas id="pb_canvas" height="420"></canvas>
-            <button class="pbBtn left" id="pb_left">◀ Flipper</button>
-            <button class="pbBtn right" id="pb_right">Flipper ▶</button>
-          </div>
-        </div>
-      </div>
+      <div class="frame"><div class="badge">Pulse Runner — v4</div><canvas id="r_canvas" height="420"></canvas></div>
     </div></div>
   </section>
 
@@ -252,611 +96,180 @@ pre{white-space:pre-wrap;line-height:1.6;margin:0}
   <section id="v-healing" class="panel">
     <div class="card"><div class="box">
       <div class="hud">
-        <span class="pill">Breath 4-7-8</span>
-        <span class="pill">Focus: Jesus • Light • Peace</span>
-        <button class="btn small" id="h_enable">Enable Audio</button>
-        <label class="btn small">Vol <input id="h_vol" type="range" min="0" max="1" step="0.01" value="0.5" class="slider"></label>
-        <button class="btn small" id="h_music">Start Music</button>
-        <button class="btn small" id="h_stop">Stop</button>
+        <button class="btn small h_pad" data-f="396">396</button>
+        <button class="btn small h_pad" data-f="432">432</button>
+        <button class="btn small h_pad" data-f="528">528</button>
+        <button class="btn small h_pad" data-f="639">639</button>
+        <button class="btn small" id="h_stop">Stop Pads</button>
+        <span class="pill">Status: <b id="h_status">Idle</b></span>
       </div>
-      <div class="two">
-        <div>
-          <div class="frame">
-            <div class="badge">Sound Healing Visualizer</div>
-            <canvas id="h_canvas" height="420"></canvas>
-            <div class="scan"></div>
-          </div>
-          <div class="hud">
-            <button class="btn small h_pad" data-f="396">396 Release</button>
-            <button class="btn small h_pad" data-f="417">417 Flow</button>
-            <button class="btn small h_pad" data-f="432">432 Resonance</button>
-            <button class="btn small h_pad" data-f="528">528 Restoration</button>
-            <button class="btn small h_pad" data-f="639">639 Unity</button>
-            <button class="btn small h_pad" data-f="741">741 Clarity</button>
-            <button class="btn small h_pad" data-f="852">852 Awaken</button>
-            <button class="btn small" id="h_pink">Pink Noise</button>
-          </div>
-        </div>
-        <div>
-          <div style="font-weight:700;margin-bottom:6px">Ministry / Prayer Console</div>
-          <textarea id="prayer" rows="7" placeholder="Type a prayer or need…"></textarea>
-          <div style="margin-top:6px">
-            <button class="btn small" id="pray_btn">Respond</button> <span class="mut" id="pray_msg"></span>
-          </div>
-          <div class="frame" style="height:240px;margin-top:10px">
-            <div class="badge">Verse & Ambient</div>
-            <div id="pray_out" style="padding:12px;overflow:auto;height:100%;box-sizing:border-box"></div>
-          </div>
-        </div>
-      </div>
+      <div class="frame"><div class="badge">Sound Healing — v4</div><canvas id="h_canvas" height="420"></canvas></div>
     </div></div>
   </section>
 
-  <!-- BIBLE -->
-  <section id="v-bible" class="panel">
-    <div class="card"><div class="box bibleWrap">
-      <div>
-        <div style="font-weight:700;margin-bottom:6px">Passages (KJV — public domain)</div>
-        <select id="b_sel">
-          <option value="gen1">Genesis 1</option>
-          <option value="john1">John 1:1–14</option>
-          <option value="rom8">Romans 8:31–39</option>
-        </select>
-        <div class="sep" style="height:10px"></div>
-        <div style="font-weight:700;margin-bottom:6px">Search</div>
-        <input id="b_q" placeholder="Search within passage (e.g., light, God, heaven)"/>
-        <div class="sep" style="height:10px"></div>
-        <div style="font-weight:700;margin-bottom:6px">Notes</div>
-        <textarea id="b_notes" rows="8" placeholder="Write reflections, prayers, study notes… (saved locally)"></textarea>
-        <div style="margin-top:6px"><button class="btn small" id="b_save">Save Notes</button> <span class="mut" id="b_msg"></span></div>
-      </div>
-      <div>
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div style="font-weight:700">Text</div>
-          <span class="pill" id="b_count">0 hits</span>
-        </div>
-        <div class="frame" style="height:540px;margin-top:8px">
-          <div class="badge">KJV</div>
-          <div id="b_text" style="padding:14px;overflow:auto;height:100%;box-sizing:border-box"></div>
-        </div>
-      </div>
-    </div></div>
-  </section>
-
-  <!-- CREATOR -->
-  <section id="v-creator" class="panel">
+  <!-- DIAGNOSTICS -->
+  <section id="v-diabox" class="panel">
     <div class="card"><div class="box">
-      <div class="hud">
-        <button class="btn small" id="c_enable">Enable Audio</button>
-        <label class="btn small">BPM <input id="c_bpm" type="range" min="60" max="170" step="1" value="92" class="slider"></label>
-        <button class="btn small" id="c_play">Play</button>
-        <button class="btn small" id="c_stop">Stop</button>
-        <button class="btn small" id="c_clear">Clear</button>
-      </div>
-      <div style="font-weight:700;margin:8px 0">8-Step Sequencer (Kick • Snare • Hat • Pad)</div>
-      <div class="pad" id="c_grid"></div>
-      <div class="mut" style="margin-top:8px">Tap squares to toggle steps. Long-press Pad row for sustained chords.</div>
-    </div></div>
-  </section>
-
-  <!-- WORLDS -->
-  <section id="v-worlds" class="panel">
-    <div class="card"><div class="box">
-      <div class="two">
-        <div>
-          <div class="frame">
-            <div class="badge">City of Light — Walk</div>
-            <canvas id="w_city" height="420"></canvas>
-            <div class="scan"></div>
-          </div>
-          <div class="mut" style="margin-top:6px">Tap left/right to walk. Tap upper area to jump (visual only).</div>
-        </div>
-        <div>
-          <div class="frame">
-            <div class="badge">Crystal Chamber — 3D seed</div>
-            <canvas id="w_crystal" height="420"></canvas>
-            <div class="scan"></div>
-          </div>
-          <div class="mut" style="margin-top:6px">Sacred geometry spin (2.5D math). Ready for WebGL upgrade later.</div>
-        </div>
-      </div>
-    </div></div>
-  </section>
-
-  <!-- NFT / DIGITAL -->
-  <section id="v-nft" class="panel">
-    <div class="card"><div class="box">
-      <div class="two">
-        <div>
-          <div class="frame">
-            <div class="badge">Scroll Sanctum — Gallery</div>
-            <canvas id="n_canvas" height="420"></canvas>
-            <div class="scan"></div>
-          </div>
+      <div style="font-weight:700;margin-bottom:6px">Audio & Input Diagnostics</div>
+      <div class="grid">
+        <div class="tile">
           <div class="hud">
-            <button class="btn small" id="n_prev">Prev</button>
-            <button class="btn small" id="n_next">Next</button>
-            <button class="btn small" id="n_export">Export PNG</button>
-            <span class="mut" id="n_msg"></span>
+            <button class="btn small" id="d_ping">Ping Tone</button>
+            <button class="btn small" id="d_tri">Triangle 660Hz</button>
+            <button class="btn small" id="d_stop">Stop All</button>
           </div>
+          <div class="mut" id="d_status">Status: waiting</div>
+          <div class="mut">If you press Ping and hear nothing on iPad/Note8, the browser blocked audio. Reload and tap the **Tap to Start** screen once.</div>
         </div>
-        <div>
-          <div style="font-weight:700;margin-bottom:6px">Metadata</div>
-          <pre id="n_meta" class="console"></pre>
-          <div class="mut" style="margin-top:6px">Later: connect marketplace APIs. For now: export art + metadata locally.</div>
-        </div>
-      </div>
-    </div></div>
-  </section>
-
-  <!-- SAAS / DEV -->
-  <section id="v-saas" class="panel">
-    <div class="card"><div class="box">
-      <div class="two">
-        <div>
-          <div style="font-weight:700;margin-bottom:6px">Command Console (JS sandbox)</div>
-          <textarea id="cmd_in" rows="8" class="console" placeholder="// Type JS and press Run. Example: 2+2"></textarea>
-          <div class="hud">
-            <button class="btn small" id="cmd_run">Run</button>
-            <button class="btn small" id="cmd_clear">Clear</button>
-          </div>
-          <div style="font-weight:700;margin:8px 0 6px 0">Output</div>
-          <pre id="cmd_out" class="console"></pre>
-        </div>
-        <div>
-          <div style="font-weight:700;margin-bottom:6px">Orchestration (demo)</div>
-          <div class="hud">
-            <label class="btn small">Task <select id="orc_task">
-              <option>Daily Verse @ 7am</option>
-              <option>World Pulse Refresh hourly</option>
-              <option>Creator Render sweep</option>
-            </select></label>
-            <button class="btn small" id="orc_add">Add</button>
-            <button class="btn small" id="orc_clear">Clear</button>
-          </div>
-          <div id="orc_list" class="console"></div>
-          <div class="mut" style="margin-top:6px">Future: real backend triggers. Here it simulates schedules locally.</div>
+        <div class="tile">
+          <div class="mut">AudioContext: <b id="d_ctx">—</b></div>
+          <div class="mut">State: <b id="d_state">—</b></div>
+          <div class="mut">Unlocked via: <b id="d_unlock">—</b></div>
         </div>
       </div>
     </div></div>
   </section>
 </div>
 
-<div class="flash" id="flash"></div>
+<!-- Fullscreen “Tap to Start” (unlocks audio + input on iOS/Android) -->
+<div id="gate" class="gate" role="button" aria-label="Tap to Start">
+  <div class="gate_inner">
+    <h2>Tap to Start</h2>
+    <p>This unlocks audio (iOS/Android policy) and primes input.</p>
+    <button class="btn" id="gate_btn">Start</button>
+    <p class="mut">If you see this again, a reload happened. Tap once, then use the app.</p>
+  </div>
+</div>
 
 <script>
-/* ========= Router ========= */
-const V={hub:gid('v-hub'),arcade:gid('v-arcade'),healing:gid('v-healing'),bible:gid('v-bible'),
-         creator:gid('v-creator'),worlds:gid('v-worlds'),nft:gid('v-nft'),saas:gid('v-saas')};
-document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.view)));
-function show(name){
-  Object.values(V).forEach(v=>v.classList.remove('active'));
-  V[name].classList.add('active');
-  if(name==='arcade') bootRunner(), bootSlice(), bootTT(), bootMemory(), bootDominoes(), bootBowling(), bootPinball();
-  if(name==='healing') bootHealing();
-  if(name==='bible') bootBible();
-  if(name==='creator') bootCreator();
-  if(name==='worlds') bootWorlds();
-  if(name==='nft') bootNFT();
-  if(name==='saas') bootSaaS();
-  setTimeout(()=>dispatchEvent(new Event('resize')),0);
-}
+/* ============= Helpers ============= */
 function gid(x){return document.getElementById(x)}
-const flashEl=document.querySelector('.flash'); function flash(){ flashEl.classList.add('on'); setTimeout(()=>flashEl.classList.remove('on'),120); }
-
-/* ========= Canvas helpers ========= */
 function setupCanvas(cvs){
-  const ctx=cvs.getContext('2d',{alpha:false});
-  ctx.imageSmoothingEnabled=false;
-  let DPR=Math.max(1,Math.min(3,devicePixelRatio||1));
-  function resize(){ const w=cvs.clientWidth,h=cvs.clientHeight; cvs.width=(w*DPR)|0; cvs.height=(h*DPR)|0; ctx.setTransform(DPR,0,0,DPR,0,0); }
-  new ResizeObserver(resize).observe(cvs); resize();
-  return {ctx,DPR};
+  const ctx=cvs.getContext('2d',{alpha:false}); ctx.imageSmoothingEnabled=false;
+  let DPR=Math.max(1,Math.min(2,window.devicePixelRatio||1));
+  function resize(){ const w=cvs.clientWidth||600, h=cvs.clientHeight||300; cvs.width=(w*DPR)|0; cvs.height=(h*DPR)|0; ctx.setTransform(DPR,0,0,DPR,0,0); }
+  if('ResizeObserver' in window){ try{ new ResizeObserver(resize).observe(cvs); }catch{ addEventListener('resize',resize); } } else addEventListener('resize',resize);
+  resize(); return {ctx,DPR};
 }
-function line(n){return (n|0)+0.5}
-function neonRect(ctx,x,y,w,h,from='#62d3ff',to='#ff49f0',a=1){
-  const g=ctx.createLinearGradient(x,y,x,y+h); g.addColorStop(0,from); g.addColorStop(1,to);
-  ctx.save(); ctx.globalAlpha=a; ctx.fillStyle=g; ctx.fillRect(x|0,y|0,w|0,h|0); ctx.strokeStyle='rgba(255,255,255,.25)'; ctx.strokeRect(line(x-0.5),line(y-0.5),(w+1)|0,(h+1)|0); ctx.restore();
-}
-function star(ctx,cx,cy,r,rot=0){ ctx.save(); ctx.translate(cx,cy); ctx.rotate(rot); ctx.beginPath();
-  for(let i=0;i<10;i++){ const ang=Math.PI*i/5, rr=(i%2==0)?r:r*0.45; ctx.lineTo(Math.cos(ang)*rr,Math.sin(ang)*rr); }
-  ctx.closePath(); ctx.fillStyle='#ffd76a'; ctx.fill(); ctx.strokeStyle='rgba(255,255,255,.55)'; ctx.stroke(); ctx.restore(); }
-function trail(ctx,pts,col='rgba(98,211,255,.35)'){
-  if(pts.length<2) return; ctx.save(); ctx.fillStyle=col;
-  for(let i=1;i<pts.length;i++){ const a=pts[i-1],b=pts[i],dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy)||1,nx=-dy/len*4,ny=dx/len*4;
-    ctx.globalAlpha=(i/pts.length)*0.7; ctx.beginPath(); ctx.moveTo(a.x+nx,a.y+ny); ctx.lineTo(a.x-nx,a.y-ny); ctx.lineTo(b.x-nx,b.y-ny); ctx.lineTo(b.x+nx,b.y+ny); ctx.closePath(); ctx.fill(); }
-  ctx.restore();
+function onCanvasTap(c,fn){
+  const rel=e=>{ const r=c.getBoundingClientRect(); return {x:(e.clientX??0)-r.left,y:(e.clientY??0)-r.top}; };
+  c.addEventListener('pointerdown',e=>{ fn(rel(e),e); e.preventDefault(); },{passive:false});
+  c.addEventListener('touchstart',e=>{ const t=e.changedTouches?.[0]; if(!t) return; const r=c.getBoundingClientRect(); fn({x:t.clientX-r.left,y:t.clientY-r.top},e); e.preventDefault(); },{passive:false});
+  c.addEventListener('mousedown',e=>fn(rel(e),e));
 }
 
-/* ========= Audio base (shared) ========= */
-function mkAudio(){
-  let AC=null, master=null;
-  function ensure(){ if(AC) return; AC=new (window.AudioContext||window.webkitAudioContext)(); master=AC.createGain(); master.gain.value=.6; master.connect(AC.destination); }
-  function tone(f=440,d=.15,v=.25,type='sine'){ if(!AC) return; const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain(); o.type=type;o.frequency.value=f; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(v,t+.01); g.gain.exponentialRampToValueAtTime(.0001,t+d); o.connect(g); g.connect(master); o.start(t); o.stop(t+d+.05); }
-  function musicOn(){ if(!AC) return; // simple generative pad + arp
-    const t=AC.currentTime; const root=220; for(let i=0;i<4;i++){ const o=AC.createOscillator(), g=AC.createGain(); o.type='sawtooth'; o.frequency.value=root*Math.pow(2,i/2); g.gain.value=.0001; o.connect(g); g.connect(master); o.start(t); g.gain.linearRampToValueAtTime(.03+i*0.01,t+2); }
-    let step=0; const seq=()=>{ if(!AC) return; const now=AC.currentTime; const o=AC.createOscillator(), g=AC.createGain(); o.type='triangle'; o.frequency.value=root*[1,5/4,3/2,2][step%4]; g.gain.value=.0001; o.connect(g); g.connect(master); o.start(now); g.gain.linearRampToValueAtTime(.08,now+.02); g.gain.exponentialRampToValueAtTime(.0001,now+.25); o.stop(now+.3); step++; musicTimer=setTimeout(seq,260); }; musicTimer=setTimeout(seq,300);
+/* ============= Global Audio Engine with Multi-Unlock ============= */
+const AudioEngine=(()=>{
+  let AC=null, master=null, unlockedBy='—';
+  const live=new Set();
+  function make(){ if(AC) return; AC=new (window.AudioContext||window.webkitAudioContext)({latencyHint:'interactive'}); master=AC.createGain(); master.gain.value=.7; master.connect(AC.destination);}
+  function state(){ return AC?AC.state:'none'; }
+  function updateBadge(){ gid('audio_state').textContent = AC && AC.state==='running' ? 'Audio: On' : (AC ? ('Audio: '+AC.state) : 'Audio: Off'); gid('d_ctx').textContent = AC? 'AudioContext' : '—'; gid('d_state').textContent = state(); gid('d_unlock').textContent=unlockedBy; }
+  function tinyClick(){ // inaudible blip to finalize unlock
+    if(!AC) return; const o=AC.createOscillator(), g=AC.createGain(); o.frequency.value=40; g.gain.value=0.0001; o.connect(g); g.connect(master);
+    const t=AC.currentTime; o.start(t); o.stop(t+0.04); live.add(o); o.onended=()=>live.delete(o);
   }
-  let musicTimer=null;
-  function musicOff(){ if(musicTimer){ clearTimeout(musicTimer); musicTimer=null; } }
-  return {get AC(){return AC}, master, ensure, tone, musicOn, musicOff};
-}
+  async function resume(tag){
+    make();
+    if(!AC) return false;
+    try{ if(AC.state!=='running'){ await AC.resume(); unlockedBy=tag||unlockedBy; tinyClick(); } }catch{}
+    updateBadge(); return AC.state==='running';
+  }
+  function tone(f=440,d=.15,v=.22,type='sine'){ if(!AC) return; const t=AC.currentTime, o=AC.createOscillator(), g=AC.createGain();
+    o.type=type; o.frequency.value=f; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(v,t+.01); g.gain.exponentialRampToValueAtTime(.0001,t+d);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t+d+.02); live.add(o); o.onended=()=>live.delete(o); }
+  function stopAll(){ live.forEach(n=>{try{n.stop(0)}catch{}}); live.clear(); updateBadge(); }
+  // Multi unlock hooks
+  ['pointerdown','touchstart','mousedown','keydown'].forEach(evt=>{
+    addEventListener(evt,()=>resume(evt),{once:false,passive:true});
+  });
+  document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') resume('visible'); });
+  return {resume,tone,stopAll,get AC(){return AC}, get master(){return master}, updateBadge};
+})();
+AudioEngine.updateBadge();
+gid('audio_stop').onclick=()=>AudioEngine.stopAll();
 
-/* =============== ARCADE: Runner (tuned jump + shield + coins) =============== */
+/* ============= Router ============= */
+const V={hub:gid('v-hub'),runner:gid('v-runner'),healing:gid('v-healing'),diag:gid('v-diabox')};
+document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{ Object.values(V).forEach(v=>v.classList.remove('active')); V[b.dataset.view].classList.add('active'); if(b.dataset.view==='runner') bootRunner(); if(b.dataset.view==='healing') bootHealing(); }));
+
+/* ============= Gate (first tap to unlock audio/input for iPad/Android) ============= */
+const gate=gid('gate'), gateBtn=gid('gate_btn');
+async function openGate(){ await AudioEngine.resume('gate'); AudioEngine.tone(660,.08,.18,'triangle'); setTimeout(()=>AudioEngine.tone(880,.08,.16,'sine'),90); gate.style.display='none'; }
+gate.addEventListener('pointerdown',openGate,{once:true}); gate.addEventListener('touchstart',e=>{e.preventDefault(); openGate();},{once:true,passive:false}); gateBtn.addEventListener('click',openGate,{once:true});
+
+/* ============= HUB touch test ============= */
+(()=>{ const cvs=gid('touch_canvas'); const {ctx}=setupCanvas(cvs); const countEl=gid('t_count'), lastEl=gid('t_last'); let count=0;
+  ctx.fillStyle='#050912'; ctx.fillRect(0,0,cvs.clientWidth,cvs.clientHeight);
+  onCanvasTap(cvs,(p,ev)=>{ count++; countEl.textContent=''+count; lastEl.textContent=ev.pointerType||ev.type; ctx.fillStyle='#62d3ff'; ctx.beginPath(); ctx.arc(p.x,p.y,6,0,Math.PI*2); ctx.fill(); });
+})();
+
+/* ============= Runner (minimal, stable) ============= */
 let runnerBoot=false;
 function bootRunner(){ if(runnerBoot) return; runnerBoot=true;
 const cvs=gid('r_canvas'); const {ctx}=setupCanvas(cvs);
-const ui={score:gid('r_score'),coins:gid('r_coins'),spd:gid('r_spd'),fps:gid('r_fps'),shield:gid('r_shield'),
-  audio:gid('r_audio'),duck:gid('r_duck'),pause:gid('r_pause'),reset:gid('r_reset')};
-const A=mkAudio(); let audioOn=false; ui.audio.onclick=()=>{ A.ensure(); audioOn=!audioOn; ui.audio.textContent=audioOn?'Audio: On':'Enable Audio'; if(A.AC&&A.AC.state==='suspended') A.AC.resume(); A.master.gain.value=audioOn?.25:.0; };
-const W=()=>cvs.clientWidth, H=()=>cvs.clientHeight;
-let paused=false, gameOver=false, last=performance.now(), frames=0, acc=0;
-const ply={x:120,y:0,w:44,h:56,vy:0,ground:0,inv:0,duck:0,trail:[]};
-const GRAV=1.00, GRAV_HOLD=0.38, JMIN=-22, JMAX=-34, HOLD_MS=280, COYOTE=12, BUF=12;
-let coyote=0, buffer=0, holding=false, holdStart=0;
-let score=0, coins=0, baseSpeed=6.2, shield=100;
-const obs=[], tokens=[], fx=[]; let spawnCD=0, tokenCD=50;
-function reset(){ paused=false; gameOver=false; score=0; coins=0; shield=100; obs.length=0; tokens.length=0; fx.length=0; ply.trail.length=0;
-  const feet=(H()-96)|0; ply.ground=feet; ply.h=56; ply.y=feet-ply.h; ply.vy=0; ply.inv=0; ply.duck=0; coyote=0; buffer=0; holding=false; holdStart=0;
-  ui.score.textContent='0'; ui.coins.textContent='0'; ui.shield.textContent='100%'; ui.spd.textContent='1.0x';
-}
+const W=()=>cvs.clientWidth||600,H=()=>cvs.clientHeight||300;
+const ui={score:gid('r_score'),shield:gid('r_shield'),pause:gid('r_pause'),reset:gid('r_reset')};
+let paused=false, over=false, score=0, shield=100;
+const ply={x:120,y:0,w:44,h:56,vy:0,ground:0,duck:0};
+const GRAV=1.0, HOLD=.35, JMAX=-32; let holding=false;
+function reset(){ over=false; paused=false; score=0; shield=100; const g=(H()-98)|0; ply.h=56; ply.ground=g; ply.y=g-ply.h; ply.vy=0; ply.duck=0; ui.score.textContent='0'; ui.shield.textContent='100%'; }
 reset();
-function blip(f,d=.06,v=.25,t='sine'){ if(audioOn){ A.tone(f,d,v,t); } }
-function requestJump(v){ buffer=BUF; const onGround=(ply.y>=ply.ground-ply.h-0.1); if(onGround||coyote>0){ ply.vy=v; coyote=0; buffer=0; holding=true; holdStart=performance.now(); blip(640,.05,.22,'triangle');
-  for(let i=0;i<22;i++) fx.push({x:ply.x+ply.w/2,y:ply.y+ply.h,vx:(Math.random()-0.5)*4,vy:-Math.random()*3-1,life:42,col:'#62d3ff'}); } }
-function doDuck(){ if(ply.duck>0) return; const feet=ply.y+ply.h; ply.h=32; ply.y=feet-ply.h; ply.duck=20; blip(480,.04,.18,'square'); }
-ui.duck.onclick=doDuck;
-function spawnObstacle(){ const g=ply.ground,r=Math.random();
-  if(r<0.35) obs.push({x:W()+40,y:g-28,w:28,h:28});
-  else if(r<0.65) obs.push({x:W()+40,y:g-60,w:28,h:60});
-  else if(r<0.82) obs.push({x:W()+40,y:g-18,w:56,h:14});
-  else { const d=60; obs.push({x:W()+40,y:g-30,w:26,h:30}); obs.push({x:W()+40+d,y:g-30,w:26,h:30}); }
-}
-function spawnToken(){ const starToken=Math.random()<0.75; tokens.push({star:starToken, x:W()+24, y: ply.ground-80-Math.random()*80, r:10, rot:0}); }
-function city(){
-  const w=W(),h=H(); ctx.fillStyle='#050912'; ctx.fillRect(0,0,w,h);
-  ctx.fillStyle='rgba(236,243,255,.22)'; for(let i=0;i<60;i++){ const x=((i*73 + performance.now()*0.02)%(w+200))-100; const y=((i*97)%h)*0.017*h; ctx.fillRect(x|0,y|0,1,1); }
-  const t=performance.now()*0.00022, layers=[{a:.14,s:.35,v:140},{a:.18,s:.55,v:200},{a:.22,s:.85,v:260}];
-  for(const L of layers){ ctx.save(); ctx.globalAlpha=L.a; ctx.translate(-(t*L.v%w),0);
-    for(let i=0;i<16;i++){ const bw=44+((i*71)%140), bh=120+((i*53)%160), x=(i*140)%w; neonRect(ctx,x,h-120*L.s-bh*L.s,bw*L.s,bh*L.s);
-      if(i%5===0 && L.s>.5){ ctx.fillStyle='rgba(255,255,255,.9)'; ctx.font='bold 10px -apple-system,system-ui'; ctx.fillText(['GODTECH','JESUS','LIGHT','HOLY','GLORY'][i%5], x+6, h-120*L.s-bh*L.s+14); } }
-    ctx.restore();
-  }
-  const y=ply.ground; const hg=ctx.createLinearGradient(0,y-40,0,y+100); hg.addColorStop(0,'rgba(98,211,255,.12)'); hg.addColorStop(1,'rgba(98,211,255,0)'); ctx.fillStyle=hg; ctx.fillRect(0,y-40,w,140);
-  ctx.fillStyle='rgba(255,255,255,.1)'; ctx.fillRect(0,line(y+2),w,2);
-}
-function step(dt){
-  if(paused||gameOver) return; const mult=1+Math.min(1.6,score/220), spd=baseSpeed*mult; ui.spd.textContent=(spd/6).toFixed(1)+'x';
-  const onGround=(ply.y>=ply.ground-ply.h-0.1); if(onGround) coyote=COYOTE; else coyote=Math.max(0,coyote-1);
-  if(buffer>0 && (onGround||coyote>0)) requestJump(JMAX+1); else buffer=Math.max(0,buffer-1);
-  const holdMs=holding?performance.now()-holdStart:0; const grav=(holding && holdMs<HOLD_MS && ply.vy<0)?GRAV_HOLD:GRAV;
-  ply.vy+=grav; ply.y+=ply.vy; if(ply.y>ply.ground-ply.h){ ply.y=ply.ground-ply.h; ply.vy=0; holding=false; }
-  if(ply.duck>0){ ply.duck--; if(ply.duck===0){ const feet=ply.y+ply.h; ply.h=56; ply.y=feet-ply.h; } }
-  if(--spawnCD<=0){ spawnCD=Math.max(26,92-(score*0.7|0)); spawnObstacle(); }
-  if(--tokenCD<=0){ tokenCD=40+(Math.random()*70|0); spawnToken(); }
-  let hit=false; const hb=()=>({x:ply.x+3,y:ply.y+(ply.duck?8:4),w:ply.w-6,h:(ply.duck?32:ply.h-8)});
-  for(let i=obs.length-1;i>=0;i--){ const o=obs[i]; o.x-=spd; const b=hb(); if(o.x<b.x+b.w && o.x+o.w>b.x && o.y<b.y+b.h && o.y+o.h>b.y){ if(ply.inv<=0) hit=true; } if(o.x+o.w<-40){ obs.splice(i,1); score++; ui.score.textContent=''+score; } }
-  if(hit){ shield=Math.max(0,shield-34); ui.shield.textContent=shield+'%'; flash(); blip(220,.12,.25,'square'); for(let i=0;i<30;i++) fx.push({x:ply.x+ply.w/2,y:ply.y+ply.h/2,vx:(Math.random()-0.5)*5,vy:(Math.random()-0.8)*5,life:36,col:'#ff49f0'}); ply.inv=24; if(shield<=0) gameOver=true; }
-  ply.inv=Math.max(0,ply.inv-1);
-  for(let i= tokens.length-1;i>=0;i--){ const c=tokens[i]; c.x-=spd; c.rot+=.12; const cx=c.x,cy=c.y,r=c.r;
-    if(cx+r>ply.x && cx-r<ply.x+ply.w && cy+r>ply.y && cy-r<ply.y+(ply.duck?32:ply.h)){ tokens.splice(i,1); coins++; ui.coins.textContent=''+coins; blip(880,.05,.22,'sine'); for(let k=0;k<16;k++) fx.push({x:cx,y:cy,vx:(Math.random()-0.5)*3,vy:(Math.random()-1.2)*3,life:28,col:'#ffd76a'}); }
-    else if(c.x+r<-20) tokens.splice(i,1);
-  }
-  for(let i=fx.length-1;i>=0;i--){ const p=fx[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=0.15; p.life--; if(p.life<=0) fx.splice(i,1); }
-  const center={x:ply.x+ply.w*0.5, y:ply.y+(ply.duck?16:ply.h*0.5)}; ply.trail.push(center); if(ply.trail.length>26) ply.trail.shift();
+function jump(){ if(over) return; if(ply.y>=ply.ground-ply.h-0.1){ ply.vy=JMAX; holding=true; AudioEngine.tone(620,.1,.2,'triangle'); } }
+function duck(){ if(over) return; if(ply.duck>0) return; const feet=ply.y+ply.h; ply.h=32; ply.y=feet-ply.h; ply.duck=18; AudioEngine.tone(480,.06,.16,'square'); }
+let startY=null;
+onCanvasTap(cvs,(p,e)=>{ jump(); startY=e.clientY||null; });
+addEventListener('pointermove',e=>{ if(startY!=null && (e.clientY-startY)>60){ duck(); startY=null; }},{passive:true});
+addEventListener('pointerup',()=>{ holding=false; startY=null; },{passive:true});
+addEventListener('touchend',()=>{ holding=false; startY=null; },{passive:true});
+
+const obs=[]; let cd=0;
+function spawn(){ const g=ply.ground; if(Math.random()<0.6) obs.push({x:W()+40,y:g-28,w:28,h:28}); else obs.push({x:W()+40,y:g-60,w:28,h:60}); }
+function step(){
+  if(paused||over) return;
+  ply.vy += (holding && ply.vy<0) ? HOLD : GRAV; ply.y += ply.vy;
+  if(ply.y>ply.ground-ply.h){ ply.y=ply.ground-ply.h; ply.vy=0; holding=false; if(ply.duck>0){ ply.duck--; if(ply.duck===0){ const feet=ply.y+ply.h; ply.h=56; ply.y=feet-ply.h; } } }
+  if(--cd<=0){ cd=82; spawn(); }
+  for(let i=obs.length-1;i>=0;i--){ const o=obs[i]; o.x-=6.2; if(o.x+o.w<-20){ obs.splice(i,1); score++; ui.score.textContent=''+score; } }
+  const b={x:ply.x+3,y:ply.y+(ply.duck?8:4),w:ply.w-6,h:(ply.duck?32:ply.h-8)};
+  for(const o of obs){ if(o.x<b.x+b.w && o.x+o.w>b.x && o.y<b.y+b.h && o.y+o.h>b.y){ shield=Math.max(0,shield-34); ui.shield.textContent=shield+'%'; AudioEngine.tone(220,.12,.22,'square'); if(shield<=0) over=true; } }
 }
 function draw(){
-  const w=W(),h=H(); city();
-  for(const o of obs){ neonRect(ctx,o.x|0,o.y|0,o.w|0,o.h|0); ctx.strokeStyle='rgba(255,255,255,.18)'; ctx.beginPath(); ctx.moveTo(line(o.x+2),line(o.y+2)); ctx.lineTo(line(o.x+o.w-2),line(o.y+2)); ctx.stroke(); }
-  for(const c of tokens){ star(ctx,c.x|0,c.y|0,c.r|0,c.rot); ctx.save(); ctx.globalAlpha=.15; ctx.beginPath(); ctx.arc(c.x,c.y,c.r+6,0,Math.PI*2); ctx.fillStyle='rgba(255,215,106,.4)'; ctx.fill(); ctx.restore(); }
-  trail(ctx,ply.trail,'rgba(98,211,255,.35)'); const ph=ply.duck?32:ply.h; neonRect(ctx,ply.x|0,ply.y|0,ply.w|0,ph|0);
-  ctx.save(); ctx.strokeStyle='rgba(255,255,255,.9)'; ctx.lineWidth=2; ctx.beginPath(); ctx.ellipse((ply.x+ply.w*0.5)|0,(ply.y-6)|0,10,3.5,0,0,Math.PI*2); ctx.stroke(); ctx.restore();
-  if(ply.inv>0){ ctx.strokeStyle='rgba(255,255,255,.7)'; ctx.strokeRect(line(ply.x-1),line(ply.y-1),(ply.w+2)|0,(ph+2)|0); }
-  for(const p of fx){ ctx.fillStyle=p.col; ctx.fillRect(p.x|0,p.y|0,2,2); }
-  if(gameOver){ ctx.fillStyle='rgba(0,0,0,.35)'; ctx.fillRect(0,0,w,h); ctx.fillStyle='#ecf3ff'; ctx.font='18px -apple-system,system-ui,Segoe UI'; ctx.fillText('Game Over — Tap to Restart',12,24); }
-}
-let _last=performance.now(); function loop(ts){ const dt=ts-_last; _last=ts; step(dt); draw(); frames++; acc+=dt; if(acc>500){ ui.fps.textContent=''+Math.round(1000/(acc/frames)); frames=0; acc=0; } requestAnimationFrame(loop); } requestAnimationFrame(loop);
-function startJump(e){ if(gameOver){ reset(); return; } A.ensure(); if(A.AC&&A.AC.state==='suspended') A.AC.resume(); const r=cvs.getBoundingClientRect(), rel=Math.max(0,Math.min(1,1-((e.clientY-r.top)/r.height))); const v=JMIN+(JMAX-JMIN)*rel; requestJump(v); e.preventDefault(); }
-function endHold(){ holding=false; }
-let swipeY=null; cvs.addEventListener('pointerdown',e=>{ startJump(e); swipeY=e.clientY; },{passive:false});
-cvs.addEventListener('pointermove',e=>{ if(swipeY!=null && e.clientY-swipeY>60){ doDuck(); swipeY=null; }},{passive:true});
-cvs.addEventListener('pointerup',()=>{ endHold(); swipeY=null; },{passive:true});
-cvs.addEventListener('pointercancel',()=>{ endHold(); swipeY=null; },{passive:true});
-ui.pause.onclick=()=>{ if(gameOver){ reset(); return; } paused=!paused; ui.pause.textContent=paused?'Resume':'Pause'; blip(paused?440:520,.06,.2); };
-ui.reset.onclick=()=>{ reset(); blip(720,.08,.25,'sine'); };
-}
-
-/* ===================== ARCADE: Slice ===================== */
-let sliceBoot=false;
-function bootSlice(){ if(sliceBoot) return; sliceBoot=true;
-const cvs=gid('s_canvas'); const {ctx}=setupCanvas(cvs);
-let paused=false, gameOver=false, last=performance.now(), score=0, combo=0, lastHitAt=0;
-const shards=[], fx=[];
-function seed(){ shards.length=0; fx.length=0; const W=cvs.clientWidth,H=cvs.clientHeight; for(let i=0;i<42;i++) shards.push({x:Math.random()*W,y:Math.random()*H,w:14+Math.random()*18,s:0.6+Math.random()*1.8}); score=0; combo=0; lastHitAt=0; gameOver=false; }
-seed();
-function step(dt){ if(paused||gameOver) return; const W=cvs.clientWidth,H=cvs.clientHeight;
-  for(const s of shards){ s.x -= s.s*46*dt/1000; if(s.x<-s.w){ s.x=W+24; s.y=Math.random()*H; s.w=14+Math.random()*18; s.s=0.6+Math.random()*1.8; } }
-  for(let i=fx.length-1;i>=0;i--){ const p=fx[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=0.14; p.life--; if(p.life<=0) fx.splice(i,1); }
-}
-function draw(){ const W=cvs.clientWidth,H=cvs.clientHeight;
-  ctx.fillStyle='#050912'; ctx.fillRect(0,0,W,H);
-  ctx.strokeStyle='rgba(98,211,255,.08)'; ctx.lineWidth=1;
-  for(let x=0;x<W;x+=24){ ctx.beginPath(); ctx.moveTo(line(x),0); ctx.lineTo(line(x),H); ctx.stroke(); }
-  for(let y=0;y<H;y+=24){ ctx.beginPath(); ctx.moveTo(0,line(y)); ctx.lineTo(W,line(y)); ctx.stroke(); }
-  for(const s of shards){ const g=ctx.createLinearGradient(s.x,s.y-2,s.x+s.w,s.y+2); g.addColorStop(0,'#62d3ff'); g.addColorStop(1,'#ff49f0'); ctx.fillStyle=g; ctx.beginPath(); ctx.moveTo(s.x|0,(s.y|0)); ctx.lineTo((s.x+s.w*0.7)|0,(s.y-2)|0); ctx.lineTo((s.x+s.w)|0,(s.y|0)); ctx.lineTo((s.x+s.w*0.7)|0,(s.y+2)|0); ctx.closePath(); ctx.fill(); }
-  ctx.fillStyle='rgba(255,73,240,.95)'; for(const p of fx){ ctx.fillRect(p.x|0,p.y|0,2,2); }
-  if(gameOver){ ctx.fillStyle='#ecf3ff'; ctx.font='18px -apple-system,system-ui,Segoe UI'; ctx.fillText('Game Over — Tap to Restart',12,24); }
-}
-function loop(ts){ const dt=ts-last; last=ts; step(dt); draw(); requestAnimationFrame(loop);} requestAnimationFrame(loop);
-function sliceAt(x,y){ const R=20; let hits=0; for(let i=shards.length-1;i>=0;i--){ const s=shards[i],cx=s.x+s.w*0.6,cy=s.y; const dx=cx-x,dy=cy-y; if(dx*dx+dy*dy<=R*R){ for(let k=0;k<18;k++) fx.push({x:cx,y:cy,vx:(Math.random()-0.5)*3,vy:(Math.random()-1.2)*3,life:30}); shards.splice(i,1); hits++; } }
-  const W=cvs.clientWidth,H=cvs.clientHeight; for(let j=0;j<hits;j++){ shards.push({x:W+24,y:Math.random()*H,w:14+Math.random()*18,s:0.6+Math.random()*1.8}); } if(hits>0){ const now=performance.now(); combo=(now-lastHitAt<=1200)?combo+1:1; lastHitAt=now; score+=hits*Math.max(1,combo); } else { combo=0; flash(); }
-}
-cvs.addEventListener('pointerdown',e=>{ if(gameOver){ seed(); return; } const r=cvs.getBoundingClientRect(); sliceAt(e.clientX-r.left,e.clientY-r.top); e.preventDefault(); },{passive:false});
-gid('s_pause').onclick=()=>{ paused=!paused; gid('s_pause').textContent=paused?'Resume':'Pause'; };
-gid('s_reset').onclick=()=>{ seed(); };
-}
-
-/* ===================== ARCADE: TicTacToe ===================== */
-let ttBoot=false;
-function bootTT(){ if(ttBoot) return; ttBoot=true;
-const cells=[...document.querySelectorAll('.tt .sq')], status=gid('tt_status'), reset=gid('tt_reset');
-let board=Array(9).fill(null), over=false; const wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-function draw(){ cells.forEach((c,i)=>{ c.textContent=board[i]||''; c.classList.remove('win'); }); }
-function winner(){ for(const w of wins){ const[a,b,c]=w; if(board[a]&&board[a]===board[b]&&board[a]===board[c]) return w; } return null; }
-function empty(){ return board.map((v,i)=>v?null:i).filter(v=>v!=null); }
-function ai(){ const me='O', you='X'; for(const i of empty()){ board[i]=me; if(winner()){ return i; } board[i]=null; }
-  for(const i of empty()){ board[i]=you; if(winner()){ board[i]=me; return i; } board[i]=null; }
-  if(board[4]==null) return 4; const corners=[0,2,6,8].filter(i=>board[i]==null); if(corners.length) return corners[Math.floor(Math.random()*corners.length)];
-  const sides=[1,3,5,7].filter(i=>board[i]==null); if(sides.length) return sides[Math.floor(Math.random()*sides.length)]; return null;
-}
-cells.forEach(btn=>btn.addEventListener('click',()=>{ const i=+btn.dataset.i; if(over||board[i]) return; board[i]='X'; draw();
-  const w=winner(); if(w){ over=true; w.forEach(j=>cells[j].classList.add('win')); status.textContent='You win!'; return; }
-  if(empty().length===0){ over=true; status.textContent='Draw.'; return; }
-  const m=ai(); if(m!=null){ board[m]='O'; draw(); const w2=winner(); if(w2){ over=true; w2.forEach(j=>cells[j].classList.add('win')); status.textContent='CPU wins.'; return; } }
-  if(empty().length===0){ over=true; status.textContent='Draw.'; return; }
-}));
-reset.onclick=()=>{ board=Array(9).fill(null); over=false; draw(); status.textContent='You are X. Good luck!'; };
-draw();
-}
-
-/* ===================== ARCADE: Memory Cards ===================== */
-let memBoot=false;
-function bootMemory(){ if(memBoot) return; memBoot=true;
-const grid=gid('m_grid'), movesEl=gid('m_moves'), matchEl=gid('m_matches'), newBtn=gid('m_new');
-const icons=['★','✝','✦','✧','☼','◆','◈','✙']; let deck=[], open=[], moves=0, matches=0;
-function make(){ grid.innerHTML=''; moves=0; matches=0; open.length=0; movesEl.textContent='0'; matchEl.textContent='0';
-  deck=[...icons,...icons].sort(()=>Math.random()-0.5);
-  deck.forEach((ch,i)=>{ const b=document.createElement('button'); b.className='card'; b.textContent=''; b.dataset.v=ch; b.onclick=()=>flip(b); grid.appendChild(b); });
-}
-function flip(b){ if(b.classList.contains('done')||b.classList.contains('open')) return; b.classList.add('open'); b.textContent=b.dataset.v; open.push(b);
-  if(open.length===2){ moves++; movesEl.textContent=''+moves; if(open[0].dataset.v===open[1].dataset.v){ open.forEach(x=>{ x.classList.add('done'); setTimeout(()=>x.classList.remove('open'),120); }); open.length=0; matches++; matchEl.textContent=''+matches; }
-  else { setTimeout(()=>{ open.forEach(x=>{ x.classList.remove('open'); x.textContent=''; }); open.length=0; },420); } }
-}
-newBtn.onclick=make; make();
-}
-
-/* ===================== ARCADE: Dominoes (toy) ===================== */
-let domBoot=false;
-function bootDominoes(){ if(domBoot) return; domBoot=true;
-const board=gid('d_board'), drawBtn=gid('d_draw'), resetBtn=gid('d_reset'), status=gid('d_status');
-let left=3,right=3; // start value
-function tile(v){ const el=document.createElement('button'); el.className='dominoTile'; el.textContent=v; el.onclick=()=>{ const n=parseInt(v,10);
-  if(n===left){ left=(n+Math.floor(Math.random()*6))%7; status.textContent='Placed on left.'; el.remove(); } else if(n===right){ right=(n+Math.floor(Math.random()*6))%7; status.textContent='Placed on right.'; el.remove(); } else { status.textContent='No match; draw again.'; } };
-return el;}
-function drawTiles(k=7){ for(let i=0;i<k;i++){ const v=Math.floor(Math.random()*7); board.appendChild(tile(v)); } }
-resetBtn.onclick=()=>{ board.innerHTML=''; left=right=3; status.textContent='New round. Match either end.'; drawTiles(7); };
-drawBtn.onclick=()=>drawTiles(3); resetBtn.click();
-}
-
-/* ===================== ARCADE: Bowling ===================== */
-let bowlBoot=false;
-function bootBowling(){ if(bowlBoot) return; bowlBoot=true;
-const lane=gid('bw_lane'), scoreEl=gid('bw_score'); lane.innerHTML=''; const pins=[], spacing=22, leftBase=lane.clientWidth/2 - spacing*1.5;
-for(let r=0;r<4;r++){ for(let i=0;i<=r;i++){ const p=document.createElement('div'); p.className='pin'; p.style.left=(leftBase + i*spacing + (r*(spacing/2)))+'px'; p.style.top=(40 + r*34)+'px'; lane.appendChild(p); pins.push(p); } }
-const ball=document.createElement('div'); ball.className='ball'; ball.style.left=(lane.clientWidth/2 -14)+'px'; ball.style.top=(lane.clientHeight-40)+'px'; lane.appendChild(ball);
-let vx=0, vy=0, rolling=false; let startY=null, startX=null, score=0;
-lane.addEventListener('pointerdown',e=>{ startY=e.clientY; startX=e.clientX; });
-lane.addEventListener('pointerup',e=>{ if(rolling) return; const dy=(startY - e.clientY); const dx=(e.clientX - startX); vx=dx*0.05; vy=-Math.max(6,Math.min(20,dy*0.06)); rolling=true; });
-function step(){ if(!rolling) return; const x=parseFloat(ball.style.left), y=parseFloat(ball.style.top);
-  let nx=x+vx, ny=y+vy; vy+=0.3;
-  if(nx<2){ nx=2; vx*=-0.5; } if(nx>lane.clientWidth-30){ nx=lane.clientWidth-30; vx*=-0.5; }
-  ball.style.left=nx+'px'; ball.style.top=ny+'px';
-  pins.forEach(p=>{ if(!p || p.dataset.hit) return; const px=parseFloat(p.style.left), py=parseFloat(p.style.top); const dx=(px-nx), dy=(py-ny); const d=Math.hypot(dx,dy);
-    if(d<28){ p.dataset.hit='1'; p.style.transform='translateY(-120px) rotate(40deg)'; p.style.opacity='0.2'; setTimeout(()=>p.remove(),400); score+=10; scoreEl.textContent='Score: '+score; }
-  });
-  if(ny<20){ rolling=false; }
-}
-setInterval(step,16);
-gid('bw_reset').onclick=()=>bootBowling();
-}
-
-/* ===================== ARCADE: Pinball (mini) ===================== */
-let pinBoot=false;
-function bootPinball(){ if(pinBoot) return; pinBoot=true;
-const cvs=gid('pb_canvas'); const {ctx}=setupCanvas(cvs);
-const left=gid('pb_left'), right=gid('pb_right');
-let ball={x:120,y:50,vx:2,vy:0}, g=0.3, flL=0, flR=0;
-left.onclick=()=>{ flL=1; setTimeout(()=>flL=0,140); }; right.onclick=()=>{ flR=1; setTimeout(()=>flR=0,140); };
-function draw(){ const W=cvs.clientWidth,H=cvs.clientHeight; ctx.fillStyle='#061024'; ctx.fillRect(0,0,W,H);
-  neonRect(ctx,20,20,60,10); neonRect(ctx,W-80,60,60,10); neonRect(ctx,60,120,10,60);
-  ctx.fillStyle='#62d3ff'; ctx.fillRect(40,H-40,80,10); ctx.save(); ctx.translate(40,H-40); ctx.rotate(flL?-0.5:-0.1); ctx.fillStyle='#ff49f0'; ctx.fillRect(0,0,80,10); ctx.restore();
-  ctx.fillStyle='#62d3ff'; ctx.fillRect(W-120,H-40,80,10); ctx.save(); ctx.translate(W-40,H-40); ctx.rotate(flR?0.5:0.1); ctx.fillStyle='#ff49f0'; ctx.fillRect(-80,0,80,10); ctx.restore();
-  ctx.fillStyle='#ffd76a'; ctx.beginPath(); ctx.arc(ball.x,ball.y,8,0,Math.PI*2); ctx.fill();
-}
-function step(){ const W=cvs.clientWidth,H=cvs.clientHeight; ball.vy+=g; ball.x+=ball.vx; ball.y+=ball.vy;
-  if(ball.x<8){ ball.x=8; ball.vx*=-0.9; } if(ball.x>W-8){ ball.x=W-8; ball.vx*=-0.9; }
-  if(ball.y<8){ ball.y=8; ball.vy*=-0.9; } if(ball.y>H-8){ ball.y=H-8; ball.vy*=-0.9; }
-  if(ball.y>H-60 && ball.x<120 && flL) { ball.vx=-6; ball.vy=-8; }
-  if(ball.y>H-60 && ball.x>W-120 && flR) { ball.vx=6; ball.vy=-8; }
+  const w=W(),h=H(); ctx.fillStyle='#050912'; ctx.fillRect(0,0,w,h);
+  ctx.fillStyle='rgba(255,255,255,.1)'; ctx.fillRect(0,Math.floor(ply.ground+2)+.5,w,2);
+  ctx.fillStyle='#ff49f0'; for(const o of obs){ ctx.fillRect(o.x|0,o.y|0,o.w|0,o.h|0); }
+  ctx.fillStyle='#62d3ff'; ctx.fillRect(ply.x|0,ply.y|0,(ply.w)|0,(ply.duck?32:ply.h)|0);
+  if(over){ ctx.fillStyle='rgba(0,0,0,.35)'; ctx.fillRect(0,0,w,h); ctx.fillStyle='#ecf3ff'; ctx.font='18px -apple-system,system-ui'; ctx.fillText('Game Over — tap Restart',12,24); }
 }
 (function loop(){ step(); draw(); requestAnimationFrame(loop); })();
-gid('pb_reset').onclick=()=>{ ball={x:cvs.clientWidth/2,y:40,vx:2,vy:0}; };
+ui.pause.onclick=()=>{ if(over){ reset(); return; } paused=!paused; ui.pause.textContent=paused?'Resume':'Pause'; };
+ui.reset.onclick=()=>{ obs.length=0; reset(); };
 }
 
-/* ===================== HEALING (pads + generative music + breath viz) ===================== */
+/* ============= Healing (pads + guaranteed Stop) ============= */
 let healBoot=false;
 function bootHealing(){ if(healBoot) return; healBoot=true;
-const cvs=gid('h_canvas'); const {ctx}=setupCanvas(cvs);
-const enable=gid('h_enable'), vol=gid('h_vol'), stopB=gid('h_stop'), pinkBtn=gid('h_pink'), musicBtn=gid('h_music'); const pads=[...document.querySelectorAll('.h_pad')];
-const A=mkAudio(); let gain=null, analyser=null, pink=null, osc=new Map();
-enable.onclick=()=>{ A.ensure(); gain=A.AC.createGain(); gain.gain.value=+vol.value; analyser=A.AC.createAnalyser(); analyser.fftSize=1024; analyser.smoothingTimeConstant=.8; gain.connect(analyser); analyser.connect(A.AC.destination); enable.textContent='Audio: On'; if(A.AC.state==='suspended') A.AC.resume(); };
-vol.oninput=()=>{ if(gain) gain.gain.value=+vol.value; };
-pads.forEach(b=>b.addEventListener('click',()=>{ if(!A.AC) return; const f=+b.dataset.f; const key='t'+f;
-  if(osc.has(key)){ try{osc.get(key).stop();}catch{} osc.delete(key); b.classList.remove('on'); return; }
-  const o=A.AC.createOscillator(), g=A.AC.createGain(); o.type='sine'; o.frequency.value=f; g.gain.value=.0001; o.connect(g); g.connect(gain); o.start(); g.gain.linearRampToValueAtTime(.22, A.AC.currentTime+.2); osc.set(key,o); b.classList.add('on');
+const cvs=gid('h_canvas'); const {ctx}=setupCanvas(cvs); const pads=[...document.querySelectorAll('.h_pad')], stopB=gid('h_stop'), status=gid('h_status');
+const active=new Map();
+pads.forEach(b=>b.addEventListener('click',async ()=>{
+  await AudioEngine.resume('pad'); const AC=AudioEngine.AC; if(!AC) return;
+  const f=+b.dataset.f, key='f'+f;
+  if(active.has(key)){ try{ active.get(key).stop(0); }catch{} active.delete(key); b.classList.remove('on'); status.textContent='Pad off'; return; }
+  const o=AC.createOscillator(), g=AC.createGain(); o.type='sine'; o.frequency.value=f; g.gain.value=.0001; o.connect(g); g.connect(AudioEngine.master); o.start(); g.gain.linearRampToValueAtTime(.18, AC.currentTime+.2);
+  o.onended=()=>active.delete(key); active.set(key,o); b.classList.add('on'); status.textContent='Playing '+f+' Hz';
 }));
-pinkBtn.onclick=()=>{ if(!A.AC) return; if(pink){ pink.disconnect(); pink=null; pinkBtn.classList.remove('on'); return; }
-  const node=A.AC.createScriptProcessor(1024,1,1); let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
-  node.onaudioprocess=e=>{const out=e.outputBuffer.getChannelData(0); for(let i=0;i<out.length;i++){ const white=Math.random()*2-1;
-    b0=.99886*b0 + white*0.0555179; b1=.99332*b1 + white*0.0750759; b2=.96900*b2 + white*0.1538520; b3=.86650*b3 + white*0.3104856;
-    b4=.55000*b4 + white*0.5329522; b5=.7616*b5 + white*0.0168980; const pinkS=b0+b1+b2+b3+b4+b5+b6+white*0.5362; b6=white*0.115926; out[i]=pinkS*0.11; } };
-  node.connect(gain); pink=node; pinkBtn.classList.add('on');
-};
-musicBtn.onclick=()=>{ if(!A.AC) return; if(musicBtn.dataset.on){ A.musicOff(); delete musicBtn.dataset.on; musicBtn.textContent='Start Music'; } else { A.musicOn(); musicBtn.dataset.on='1'; musicBtn.textContent='Stop Music'; } };
-stopB.onclick=()=>{ osc.forEach(o=>{try{o.stop()}catch{}}); osc.clear(); if(pink){pink.disconnect(); pink=null;} pads.forEach(b=>b.classList.remove('on')); pinkBtn.classList.remove('on'); A.musicOff(); delete musicBtn.dataset.on; musicBtn.textContent='Start Music'; };
-
-function breathViz(){
-  const W=cvs.clientWidth,H=cvs.clientHeight; ctx.fillStyle='#050912'; ctx.fillRect(0,0,W,H);
-  const cycle=4+7+8; const sec=(performance.now()/1000)%cycle;
-  let phase='Inhale', prog=sec/4; if(sec>4 && sec<=11){ phase='Hold'; prog=(sec-4)/7; } else if(sec>11){ phase='Exhale'; prog=(sec-11)/8; }
-  const r = phase==='Inhale'? 18+prog*90 : phase==='Hold'? 108 : 108 - prog*90;
-  const cx=W*0.5, cy=H*0.55; const grd=ctx.createRadialGradient(cx,cy,1,cx,cy,r); grd.addColorStop(0,'rgba(98,211,255,.9)'); grd.addColorStop(1,'rgba(255,73,240,.4)'); ctx.fillStyle=grd; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='rgba(255,255,255,.9)'; ctx.font='16px -apple-system,system-ui'; ctx.textAlign='center'; ctx.fillText(phase, cx, cy+r+18);
-}
-function bars(){
-  breathViz();
-  if(!A.AC || !analyser) return;
-  const W=cvs.clientWidth,H=cvs.clientHeight; const data=new Uint8Array(analyser.frequencyBinCount); analyser.getByteFrequencyData(data);
-  const n=Math.min(96,data.length), bw=W/n;
-  for(let i=0;i<n;i++){ const v=data[i]/255, h=v*(H*0.35), x=i*bw, y=H*0.15+(H*0.35-h); neonRect(ctx,x|0,y|0,Math.max(1,bw-2)|0,h|0); }
-}
-(function loop(){ bars(); requestAnimationFrame(loop); })();
-
-/* Prayer console */
-const PR=gid('prayer'), OUT=gid('pray_out'), BTN=gid('pray_btn'), MSG=gid('pray_msg');
-const verses=[
-  "The LORD is my shepherd; I shall not want. — Ps 23:1",
-  "In him was life; and the life was the light of men. — Jn 1:4",
-  "If God be for us, who can be against us? — Rom 8:31",
-  "Cast all your anxiety on Him, because He cares for you. — 1 Pet 5:7"
-];
-BTN.onclick=()=>{ const txt=PR.value.trim(); if(!txt){ MSG.textContent='Type a prayer first.'; setTimeout(()=>MSG.textContent='',1200); return; }
-  const pick=verses[(txt.length+Math.floor(Math.random()*verses.length))%verses.length];
-  OUT.innerHTML=`<b>Prayer:</b> ${txt}<br/><br/><b>Word:</b> ${pick}<br/><br/>Peace and grace in Jesus’ Name.`;
-  if(A.AC){ A.tone(528,.6,.25,'sine'); A.tone(396,.6,.18,'sine'); }
-};
+stopB.onclick=()=>{ active.forEach(n=>{try{n.stop(0)}catch{}}); active.clear(); pads.forEach(p=>p.classList.remove('on')); status.textContent='Stopped'; };
+(function viz(){ const W=cvs.clientWidth,H=cvs.clientHeight; ctx.fillStyle='#050912'; ctx.fillRect(0,0,W,H); const t=Date.now()/1000; const r=60+Math.sin(t*0.6)*20; ctx.strokeStyle='rgba(98,211,255,.6)'; ctx.beginPath(); ctx.arc(W/2,H/2,r,0,Math.PI*2); ctx.stroke(); requestAnimationFrame(viz);} )();
 }
 
-/* ===================== BIBLE ===================== */
-let bibleBoot=false;
-function bootBible(){ if(bibleBoot) return; bibleBoot=true;
-const SEL=gid('b_sel'), OUT=gid('b_text'), Q=gid('b_q'), CNT=gid('b_count'), NOTES=gid('b_notes'), SAVE=gid('b_save'), MSG=gid('b_msg');
-const texts={
-gen1:`Genesis 1 (KJV)
-1 In the beginning God created the heaven and the earth.
-2 And the earth was without form, and void; and darkness was upon the face of the deep. And the Spirit of God moved upon the face of the waters.
-3 And God said, Let there be light: and there was light.
-4 And God saw the light, that it was good: and God divided the light from the darkness.
-5 And God called the light Day, and the darkness he called Night. And the evening and the morning were the first day.
-…`,
-john1:`John 1:1–14 (KJV)
-1 In the beginning was the Word, and the Word was with God, and the Word was God.
-2 The same was in the beginning with God.
-3 All things were made by him; and without him was not any thing made that was made.
-4 In him was life; and the life was the light of men.
-5 And the light shineth in darkness; and the darkness comprehended it not.
-… 14 And the Word was made flesh, and dwelt among us…`,
-rom8:`Romans 8:31–39 (KJV)
-31 What shall we then say to these things? If God be for us, who can be against us? 
-32 He that spared not his own Son… 
-… 39 Nor height, nor depth… shall be able to separate us from the love of God, which is in Christ Jesus our Lord.`
-};
-function render(){ OUT.innerHTML=texts[SEL.value].replace(/(\n)/g,'<br/>'); doSearch(); }
-function doSearch(){ const q=Q.value.trim().toLowerCase(); if(!q){ OUT.innerHTML=texts[SEL.value].replace(/(\n)/g,'<br/>'); CNT.textContent='0 hits'; return; }
-  const txt=texts[SEL.value]; let hits=0; const html=txt.replace(new RegExp(q,'gi'),m=>{hits++; return `<mark style="background:rgba(255,215,106,.5)">${m}</mark>`;}); OUT.innerHTML=html.replace(/(\n)/g,'<br/>'); CNT.textContent=`${hits} hits`; }
-SEL.onchange=render; Q.oninput=doSearch; SAVE.onclick=()=>{ try{ localStorage.setItem('aeternos_notes', NOTES.value); MSG.textContent='Saved.'; setTimeout(()=>MSG.textContent='',1200);}catch{ MSG.textContent='Cannot save.'; } };
-try{ NOTES.value=localStorage.getItem('aeternos_notes')||''; }catch{}
-render();
-}
+/* ============= Diagnostics ============= */
+const dPing=gid('d_ping'), dTri=gid('d_tri'), dStop=gid('d_stop'), dStatus=gid('d_status');
+dPing.onclick=async()=>{ const ok=await AudioEngine.resume('diag'); if(ok){ AudioEngine.tone(520,.12,.22,'sine'); dStatus.textContent='Status: ping played'; } else { dStatus.textContent='Status: blocked'; } };
+dTri.onclick=async()=>{ const ok=await AudioEngine.resume('diag_tri'); if(ok){ AudioEngine.tone(660,.15,.22,'triangle'); dStatus.textContent='Status: triangle 660Hz'; } else { dStatus.textContent='Status: blocked'; } };
+dStop.onclick=()=>{ AudioEngine.stopAll(); dStatus.textContent='Status: stopped'; };
 
-/* ===================== CREATOR (multi-track mini-DAW) ===================== */
-let creatorBoot=false;
-function bootCreator(){ if(creatorBoot) return; creatorBoot=true;
-const A=mkAudio(); const enable=gid('c_enable'), bpm=gid('c_bpm'), play=gid('c_play'), stopB=gid('c_stop'), clear=gid('c_clear'), grid=gid('c_grid');
-let out=null, step=0, timer=null;
-function ensure(){ A.ensure(); out=A.AC.createGain(); out.gain.value=.6; out.connect(A.AC.destination); }
-function kick(t){ const o=A.AC.createOscillator(), g=A.AC.createGain(); o.frequency.setValueAtTime(140,t); o.frequency.exponentialRampToValueAtTime(40,t+.12); g.gain.setValueAtTime(.8,t); g.gain.exponentialRampToValueAtTime(.0001,t+.2); o.connect(g); g.connect(out); o.start(t); o.stop(t+.25); }
-function snare(t){ const b=A.AC.createBuffer(1,A.AC.sampleRate*.2,A.AC.sampleRate); const d=b.getChannelData(0); for(let i=0;i<d.length;i++){ d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2); } const n=A.AC.createBufferSource(); n.buffer=b; const g=A.AC.createGain(); g.gain.value=.4; n.connect(g); g.connect(out); n.start(t); }
-function hat(t){ const b=A.AC.createBuffer(1,A.AC.sampleRate*.05,A.AC.sampleRate); const d=b.getChannelData(0); for(let i=0;i<d.length;i++){ d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,1.5); } const n=A.AC.createBufferSource(); n.buffer=b; const g=A.AC.createGain(); g.gain.value=.25; n.connect(g); g.connect(out); n.start(t); }
-function pad(t){ const o=A.AC.createOscillator(), g=A.AC.createGain(); o.type='sawtooth'; o.frequency.value=220; g.gain.setValueAtTime(.0001,t); g.gain.linearRampToValueAtTime(.15,t+.2); g.gain.linearRampToValueAtTime(.0001,t+.9); o.connect(g); g.connect(out); o.start(t); o.stop(t+1); }
-const rows=['K','S','H','P'], steps=8, state=[...Array(rows.length)].map(()=>Array(steps).fill(0));
-rows.forEach((name,r)=>{ for(let c=0;c<steps;c++){ const cell=document.createElement('button'); cell.className='cell'; cell.textContent=name; cell.dataset.r=r; cell.dataset.c=c; cell.onclick=()=>{ state[r][c]=state[r][c]^1; cell.classList.toggle('on', !!state[r][c]); }; grid.appendChild(cell); }});
-enable.onclick=()=>{ ensure(); if(A.AC.state==='suspended') A.AC.resume(); };
-play.onclick=()=>{ ensure(); const spb=60/(+bpm.value); if(timer) clearInterval(timer); timer=setInterval(()=>{ const t=A.AC.currentTime+0.02; for(let r=0;r<rows.length;r++){ if(state[r][step]) [kick,snare,hat,pad][r](t); } step=(step+1)%steps; }, spb*1000/2); };
-stopB.onclick=()=>{ if(timer) clearInterval(timer); timer=null; };
-clear.onclick=()=>{ state.forEach(row=>row.fill(0)); [...grid.children].forEach(c=>c.classList.remove('on')); };
-}
-
-/* ===================== WORLDS ===================== */
-let worldsBoot=false;
-function bootWorlds(){ if(worldsBoot) return; worldsBoot=true;
-/* City walk */
-const city=gid('w_city'); const {ctx:cx}=setupCanvas(city); let px=city.clientWidth/2, py=city.clientHeight-110, vy=0, onG=true;
-function drawCity(){ const W=city.clientWidth,H=city.clientHeight; cx.fillStyle='#050912'; cx.fillRect(0,0,W,H);
-  const t=performance.now()*0.0002; for(let L=0;L<3;L++){ const a=[.10,.12,.16][L], s=[.35,.55,.85][L]; cx.save(); cx.translate(-(t*(120+L*60)%W),0); cx.fillStyle=`rgba(98,211,255,${a})`;
-    for(let i=0;i<14;i++){ const bw=44+((i*71)%140), bh=120+((i*53)%160), x=(i*140)%W; neonRect(cx,x,H-120*s-bh*s,bw*s,bh*s); } cx.restore();}
-  cx.fillStyle='rgba(255,255,255,.1)'; cx.fillRect(0,line(py+56+2),W,2);
-  neonRect(cx,px|0,py|0,44,56); cx.strokeStyle='rgba(255,255,255,.9)'; cx.beginPath(); cx.ellipse(px+22,py-6,10,3.5,0,0,Math.PI*2); cx.stroke();
-}
-city.addEventListener('pointerdown',e=>{ const r=city.getBoundingClientRect(); const x=e.clientX-r.left; if(x<city.clientWidth/2) px-=26; else px+=26; });
-city.addEventListener('pointerup',()=>{ if(onG){ vy=-12; onG=false; }});
-function stepCity(){ vy+=0.6; py+=vy; const g=city.clientHeight-110; if(py>g){ py=g; vy=0; onG=true; } if(px<4) px=4; if(px>city.clientWidth-48) px=city.clientWidth-48; }
-(function loop(){ stepCity(); drawCity(); requestAnimationFrame(loop); })();
-/* Crystal spin */
-const crystal=gid('w_crystal'); const {ctx:kx}=setupCanvas(crystal); let ang=0;
-function drawCrystal(){ const W=crystal.clientWidth,H=crystal.clientHeight; kx.fillStyle='#050912'; kx.fillRect(0,0,W,H);
-  const cx=W/2, cy=H/2; for(let i=0;i<10;i++){ const r=40+i*10; kx.strokeStyle=`rgba(98,211,255,${.2+i*.06})`; kx.beginPath(); for(let a=0;a<Math.PI*2;a+=Math.PI/3){ const x=cx+Math.cos(a+ang+i*0.2)*r, y=cy+Math.sin(a+ang+i*0.2)*r; kx.lineTo(x,y); } kx.closePath(); kx.stroke(); }
-}
-(function loop2(){ ang+=0.02; drawCrystal(); requestAnimationFrame(loop2); })();
-}
-
-/* ===================== NFT / DIGITAL ===================== */
-let nftBoot=false;
-function bootNFT(){ if(nftBoot) return; nftBoot=true;
-const cvs=gid('n_canvas'); const {ctx}=setupCanvas(cvs); const prev=gid('n_prev'), next=gid('n_next'), exp=gid('n_export'), msg=gid('n_msg'), meta=gid('n_meta');
-const items=[{name:'Scroll of Light',attr:{tier:'S',blessing:'Restoration',color:'Aqua/Pink'}},
-             {name:'Crown of Mercy',attr:{tier:'A',blessing:'Mercy',color:'Gold'}},
-             {name:'Chord of Zion',attr:{tier:'A',blessing:'Harmony',color:'Blue/Gold'}}];
-let idx=0;
-function draw(){
-  const W=cvs.clientWidth,H=cvs.clientHeight; ctx.fillStyle='#050912'; ctx.fillRect(0,0,W,H);
-  const t=items[idx]; const cx=W/2, cy=H/2; const g=ctx.createRadialGradient(cx,cy,10,cx,cy,160); g.addColorStop(0,'rgba(98,211,255,.8)'); g.addColorStop(1,'rgba(255,73,240,.2)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,160,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='#fff'; ctx.font='bold 18px -apple-system,system-ui'; ctx.textAlign='center'; ctx.fillText(t.name, cx, 36);
-  neonRect(ctx,cx-70,cy-24,140,48); ctx.fillStyle='rgba(255,255,255,.85)'; ctx.font='12px -apple-system,system-ui';
-  ctx.fillText(`${t.attr.tier} • ${t.attr.blessing} • ${t.attr.color}`, cx, cy+4);
-}
-function showMeta(){ meta.textContent=JSON.stringify(items[idx],null,2); }
-prev.onclick=()=>{ idx=(idx-1+items.length)%items.length; draw(); showMeta(); };
-next.onclick=()=>{ idx=(idx+1)%items.length; draw(); showMeta(); };
-exp.onclick=()=>{ try{ const a=document.createElement('a'); a.download=`${items[idx].name.replace(/\s+/g,'_')}.png`; a.href=cvs.toDataURL('image/png'); a.click(); msg.textContent='Exported PNG.'; setTimeout(()=>msg.textContent='',1200);}catch{ msg.textContent='Export failed.'; } };
-draw(); showMeta();
-}
-
-/* ===================== SAAS / DEV ===================== */
-let saasBoot=false;
-function bootSaaS(){ if(saasBoot) return; saasBoot=true;
-const IN=gid('cmd_in'), OUT=gid('cmd_out'), RUN=gid('cmd_run'), CLR=gid('cmd_clear');
-RUN.onclick=()=>{ try{ const r=eval(IN.value); OUT.textContent+=`> ${r}\n`; OUT.scrollTop=OUT.scrollHeight; }catch(e){ OUT.textContent+=`! ${e}\n`; } };
-CLR.onclick=()=>{ OUT.textContent=''; IN.value=''; };
-const task=gid('orc_task'), add=gid('orc_add'), clear=gid('orc_clear'), list=gid('orc_list'); let entries=[];
-add.onclick=()=>{ entries.push({when:new Date().toLocaleString(), what:task.value}); render(); };
-clear.onclick=()=>{ entries=[]; render(); };
-function render(){ list.textContent=entries.map((e,i)=>`${i+1}. ${e.what} — added ${e.when}`).join('\n'); }
-render();
-}
-
-/* Boot hub by default */
-show('hub');
+/* default view */
+V.hub.classList.add('active');
 </script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
-<title>Aeternos HUD — 2025 single-file</title>
+<title>Aeternos HUD — tap to slice</title>
 <style>
   :root{--ink:#eaf2ff;--mut:#9fb3cc;--a:#62d3ff;--b:#ff49f0;--panel:#0f1a33}
   html,body{height:100%;margin:0;background:radial-gradient(1200px 800px at 50% 10%, #0b1734, #060a16);color:var(--ink);font-family:-apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial;touch-action:manipulation}
@@ -15,48 +15,28 @@
   .btn{border:2px solid rgba(255,255,255,.6);background:transparent;color:var(--ink);padding:10px 14px;border-radius:12px;font-size:16px}
   .mut{color:var(--mut);font-size:13px}
 
-  /* CSS fallback panel (works even if JS is blocked) */
-  .grid{height:260px;margin-top:8px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#0b162b;overflow:hidden;position:relative}
-  .par{position:absolute;inset:0;background-image:
-       radial-gradient(rgba(255,255,255,.18) 1px, transparent 2px),
-       repeating-linear-gradient(90deg, rgba(255,255,255,.05), rgba(255,255,255,.05) 2px, transparent 2px, transparent 40px);
-       background-size:26px 26px, 80px 100%;animation:par 12s linear infinite}
-  @keyframes par{from{background-position:0 0,0 0}to{background-position:-1600px 0,-800px 0}}
-
-  /* Bars (CSS-based, always visible) */
-  .bars{display:flex;gap:12px;margin-top:10px}
-  .bar{flex:1;height:12px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden}
-  .fill{height:100%;width:40%;background:linear-gradient(90deg,var(--a),var(--b));box-shadow:0 0 18px rgba(98,211,255,.35)}
-
-  /* Live canvas (only shown when JS allowed) */
-  #live{display:none;width:100%;height:260px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#0b162b}
+  /* Canvas (live). If JS were blocked, nothing breaks—the page still shows content around it. */
+  #live{display:block;width:100%;height:300px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#0b162b}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="card">
-    <h1>Aeternos HUD — 2025</h1>
+    <h1>Aeternos — Tap to Slice</h1>
 
     <div class="row" style="margin:6px 0 10px 0">
       <span class="pill">Score: <b id="score">0</b></span>
       <span class="pill">FPS: <b id="fps">--</b></span>
       <span class="pill">Touches: <b id="touch">0</b></span>
+      <button class="btn" id="pauseBtn" type="button">Pause</button>
       <button class="btn" id="resetBtn" type="button">Reset</button>
     </div>
 
-    <!-- Works even when JS is blocked -->
-    <div class="grid"><div class="par"></div></div>
-
-    <!-- Upgrades automatically when JS is allowed -->
-    <canvas id="live" height="260"></canvas>
-
-    <div class="bars">
-      <div class="bar"><div class="fill" id="energy" style="width:35%"></div></div>
-      <div class="bar"><div class="fill" id="shield" style="width:55%"></div></div>
-    </div>
+    <canvas id="live" height="300"></canvas>
 
     <p class="mut" style="margin-top:10px">
-      Tip: You’re on GitHub Pages — JS should run here. If you ever open a raw file and see a <b>Done</b> button, that’s iOS Preview (no JS). Always use this Pages URL.
+      Tip: Tapping near a blue line “slices” it (removes it) and gives you a point.
+      Use Reset to repopulate if you clear the screen.
     </p>
   </div>
 </div>
@@ -64,19 +44,11 @@
 <script>
 (() => {
   const cvs = document.getElementById('live');
-  const grid = document.querySelector('.grid');
-  if (!cvs.getContext) return; // stay in CSS-only mode
-
-  // JS is allowed → show live canvas HUD
-  grid.style.display = 'none';
-  cvs.style.display = 'block';
-
   const ctx = cvs.getContext('2d', {alpha:false});
   const scoreEl = document.getElementById('score');
   const fpsEl = document.getElementById('fps');
   const touchEl = document.getElementById('touch');
-  const energy = document.getElementById('energy');
-  const shield = document.getElementById('shield');
+  const pauseBtn = document.getElementById('pauseBtn');
   const resetBtn = document.getElementById('resetBtn');
 
   let DPR = Math.max(1, Math.min(3, window.devicePixelRatio||1));
@@ -87,55 +59,139 @@
   }
   new ResizeObserver(resize).observe(cvs); resize();
 
-  // State
+  // Game state
+  let paused = false;
   let t=0,last=performance.now(),frames=0,acc=0,score=0,touches=0;
-  const lines=[]; 
-  function seed(){ 
-    lines.length=0;
-    for(let i=0;i<36;i++){ lines.push({x:Math.random()*cvs.width/DPR,y:Math.random()*cvs.height/DPR,s:0.5+Math.random()*1.6}); }
-    score=0; touches=0; scoreEl.textContent='0'; touchEl.textContent='0';
+
+  // “Lines” are little horizontal neon dashes moving left
+  const lines = [];
+  const fx = []; // particles on slice
+  function seed() {
+    lines.length = 0; fx.length = 0;
+    for (let i=0;i<42;i++) {
+      lines.push({
+        x: Math.random() * (cvs.width/DPR),
+        y: Math.random() * (cvs.height/DPR),
+        w: 12 + Math.random()*10, // length
+        s: 0.6 + Math.random()*1.8 // speed factor
+      });
+    }
+    score = 0; touches = 0;
+    scoreEl.textContent = '0';
+    touchEl.textContent = '0';
   }
   seed();
 
-  function step(dt){
+  function step(dt) {
+    if (paused) return;
     t += dt/1000;
-    for(const L of lines){ L.x -= L.s*40*dt/1000; if(L.x<-20) L.x = cvs.width/DPR + 20; }
-    // pulse bars
-    const e = 0.32 + 0.22*Math.sin(t*2.05);
-    const s = 0.52 + 0.28*Math.sin(t*1.25 + 1.2);
-    energy.style.width = Math.round(100*Math.max(0,Math.min(1,e)))+'%';
-    shield.style.width = Math.round(100*Math.max(0,Math.min(1,s)))+'%';
+
+    // Move lines left; respawn when off-screen
+    const W = cvs.width/DPR, H = cvs.height/DPR;
+    for (const L of lines) {
+      L.x -= L.s * 40 * dt/1000;
+      if (L.x < -L.w) {
+        L.x = W + 20;
+        L.y = Math.random()*H;
+        L.w = 12 + Math.random()*10;
+        L.s = 0.6 + Math.random()*1.8;
+      }
+    }
+
+    // particles
+    for (let i=fx.length-1;i>=0;i--) {
+      const p = fx[i];
+      p.x += p.vx; p.y += p.vy; p.vy += 0.15;
+      p.life--;
+      if (p.life<=0) fx.splice(i,1);
+    }
   }
-  function draw(){
+
+  function draw() {
     const W=cvs.width/DPR, H=cvs.height/DPR;
-    ctx.clearRect(0,0,W,H);
+    // background
     const bg=ctx.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#0b1734'); bg.addColorStop(1,'#091024');
     ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
 
-    // parallax skyline lines
-    ctx.save(); ctx.globalAlpha=0.9; ctx.fillStyle='rgba(98,211,255,.85)';
-    for(const L of lines){ ctx.fillRect(L.x|0, (L.y|0), 14, 2); }
-    ctx.restore();
+    // lines
+    ctx.fillStyle='rgba(98,211,255,.88)';
+    for (const L of lines) {
+      ctx.fillRect(L.x|0, L.y|0, L.w|0, 2);
+    }
 
-    // title
-    ctx.fillStyle='#eaf2ff'; ctx.font='16px -apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial';
-    ctx.fillText('Aeternos HUD — Live', 12, 24);
+    // particles
+    ctx.fillStyle='rgba(255,73,240,.95)';
+    for (const p of fx) {
+      ctx.fillRect(p.x|0, p.y|0, 2, 2);
+    }
+
+    // paused overlay
+    if (paused) {
+      ctx.fillStyle='rgba(0,0,0,.35)';
+      ctx.fillRect(0,0,W,H);
+      ctx.fillStyle='#eaf2ff'; ctx.font='16px -apple-system,system-ui,Segoe UI';
+      ctx.fillText('Paused — tap Pause to resume', 12, 24);
+    }
   }
-  function loop(ts){
+
+  function loop(ts) {
     const dt = ts - last; last = ts;
     step(dt); draw();
     frames++; acc += dt;
-    if (acc > 500) { fpsEl.textContent = String(Math.round(1000/(acc/frames))); frames=0; acc=0; }
+    if (acc > 500) {
+      fpsEl.textContent = String(Math.round(1000/(acc/frames)));
+      frames=0; acc=0;
+    }
     requestAnimationFrame(loop);
   }
   requestAnimationFrame(loop);
 
-  // Touch counter + score tick
-  cvs.addEventListener('pointerdown', (e)=>{ touches++; touchEl.textContent = String(touches); e.preventDefault(); }, {passive:false});
-  setInterval(()=>{ score++; scoreEl.textContent = String(score); }, 1200);
+  // Tap to slice: remove any line whose center is within a small radius of the tap
+  function sliceAt(clientX, clientY) {
+    const rect = cvs.getBoundingClientRect();
+    const x = (clientX - rect.left);
+    const y = (clientY - rect.top);
+    const radius = 18; // hit radius in CSS pixels
 
-  // Reset button
-  resetBtn.addEventListener('click', () => { seed(); });
+    let hit = false;
+    for (let i=lines.length-1;i>=0;i--) {
+      const L = lines[i];
+      const cx = L.x + L.w/2;
+      const cy = L.y + 1; // center of the 2px line
+      const dx = (cx - x), dy = (cy - y);
+      if (dx*dx + dy*dy <= radius*radius) {
+        // spawn particles
+        for (let k=0;k<20;k++){
+          fx.push({x:cx,y:cy,vx:(Math.random()-0.5)*3,vy:(Math.random()-1.2)*3,life:30});
+        }
+        // remove the line and immediately respawn a fresh one at the right
+        const W = cvs.width/DPR, H = cvs.height/DPR;
+        lines.splice(i,1);
+        lines.push({ x: W + 20, y: Math.random()*H, w: 12 + Math.random()*10, s: 0.6 + Math.random()*1.8 });
+        score++; scoreEl.textContent = String(score);
+        hit = true;
+        // continue loop to allow multi-hits per tap within radius
+      }
+    }
+    return hit;
+  }
+
+  cvs.addEventListener('pointerdown', (e) => {
+    touches++; touchEl.textContent = String(touches);
+    sliceAt(e.clientX, e.clientY);
+    e.preventDefault();
+  }, {passive:false});
+
+  pauseBtn.addEventListener('click', () => {
+    paused = !paused;
+    pauseBtn.textContent = paused ? 'Resume' : 'Pause';
+  });
+
+  resetBtn.addEventListener('click', () => {
+    seed();
+    paused = false;
+    pauseBtn.textContent = 'Pause';
+  });
 })();
 </script>
 </body>

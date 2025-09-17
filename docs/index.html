@@ -1,8 +1,142 @@
-<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Aeternos HUD</title>
-<body style="margin:0;font-family:-apple-system,system-ui;background:#0b1734;color:#eaf2ff">
-  <div style="max-width:800px;margin:24px auto;padding:16px;background:#0f1a33;border:1px solid rgba(255,255,255,.15);border-radius:16px">
-    <h1 style="margin:0 0 8px 0">Aeternos HUD — docs mode ✅</h1>
-    <p>If you can read this, GitHub Pages is serving <code>/docs/index.html</code>.</p>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>Aeternos HUD — 2025 single-file</title>
+<style>
+  :root{--ink:#eaf2ff;--mut:#9fb3cc;--a:#62d3ff;--b:#ff49f0;--panel:#0f1a33}
+  html,body{height:100%;margin:0;background:radial-gradient(1200px 800px at 50% 10%, #0b1734, #060a16);color:var(--ink);font-family:-apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial;touch-action:manipulation}
+  .wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:16px}
+  .card{width:100%;max-width:900px;background:var(--panel);border:1px solid rgba(255,255,255,.12);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.45);padding:16px}
+  h1{margin:0 0 8px 0;font-size:22px;text-shadow:0 0 16px rgba(98,211,255,.35)}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .pill{border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:6px 10px;background:rgba(255,255,255,.06);font-size:13px}
+  .btn{border:2px solid rgba(255,255,255,.6);background:transparent;color:var(--ink);padding:10px 14px;border-radius:12px;font-size:16px}
+  .mut{color:var(--mut);font-size:13px}
+
+  /* CSS fallback panel (works even if JS is blocked) */
+  .grid{height:260px;margin-top:8px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#0b162b;overflow:hidden;position:relative}
+  .par{position:absolute;inset:0;background-image:
+       radial-gradient(rgba(255,255,255,.18) 1px, transparent 2px),
+       repeating-linear-gradient(90deg, rgba(255,255,255,.05), rgba(255,255,255,.05) 2px, transparent 2px, transparent 40px);
+       background-size:26px 26px, 80px 100%;animation:par 12s linear infinite}
+  @keyframes par{from{background-position:0 0,0 0}to{background-position:-1600px 0,-800px 0}}
+
+  /* Bars (CSS-based, always visible) */
+  .bars{display:flex;gap:12px;margin-top:10px}
+  .bar{flex:1;height:12px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden}
+  .fill{height:100%;width:40%;background:linear-gradient(90deg,var(--a),var(--b));box-shadow:0 0 18px rgba(98,211,255,.35)}
+
+  /* Live canvas (only shown when JS allowed) */
+  #live{display:none;width:100%;height:260px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#0b162b}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>Aeternos HUD — 2025</h1>
+
+    <div class="row" style="margin:6px 0 10px 0">
+      <span class="pill">Score: <b id="score">0</b></span>
+      <span class="pill">FPS: <b id="fps">--</b></span>
+      <span class="pill">Touches: <b id="touch">0</b></span>
+      <button class="btn" id="resetBtn" type="button">Reset</button>
+    </div>
+
+    <!-- Works even when JS is blocked -->
+    <div class="grid"><div class="par"></div></div>
+
+    <!-- Upgrades automatically when JS is allowed -->
+    <canvas id="live" height="260"></canvas>
+
+    <div class="bars">
+      <div class="bar"><div class="fill" id="energy" style="width:35%"></div></div>
+      <div class="bar"><div class="fill" id="shield" style="width:55%"></div></div>
+    </div>
+
+    <p class="mut" style="margin-top:10px">
+      Tip: You’re on GitHub Pages — JS should run here. If you ever open a raw file and see a <b>Done</b> button, that’s iOS Preview (no JS). Always use this Pages URL.
+    </p>
   </div>
+</div>
+
+<script>
+(() => {
+  const cvs = document.getElementById('live');
+  const grid = document.querySelector('.grid');
+  if (!cvs.getContext) return; // stay in CSS-only mode
+
+  // JS is allowed → show live canvas HUD
+  grid.style.display = 'none';
+  cvs.style.display = 'block';
+
+  const ctx = cvs.getContext('2d', {alpha:false});
+  const scoreEl = document.getElementById('score');
+  const fpsEl = document.getElementById('fps');
+  const touchEl = document.getElementById('touch');
+  const energy = document.getElementById('energy');
+  const shield = document.getElementById('shield');
+  const resetBtn = document.getElementById('resetBtn');
+
+  let DPR = Math.max(1, Math.min(3, window.devicePixelRatio||1));
+  function resize() {
+    const w = cvs.clientWidth, h = cvs.clientHeight;
+    cvs.width = Math.floor(w * DPR); cvs.height = Math.floor(h * DPR);
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  new ResizeObserver(resize).observe(cvs); resize();
+
+  // State
+  let t=0,last=performance.now(),frames=0,acc=0,score=0,touches=0;
+  const lines=[]; 
+  function seed(){ 
+    lines.length=0;
+    for(let i=0;i<36;i++){ lines.push({x:Math.random()*cvs.width/DPR,y:Math.random()*cvs.height/DPR,s:0.5+Math.random()*1.6}); }
+    score=0; touches=0; scoreEl.textContent='0'; touchEl.textContent='0';
+  }
+  seed();
+
+  function step(dt){
+    t += dt/1000;
+    for(const L of lines){ L.x -= L.s*40*dt/1000; if(L.x<-20) L.x = cvs.width/DPR + 20; }
+    // pulse bars
+    const e = 0.32 + 0.22*Math.sin(t*2.05);
+    const s = 0.52 + 0.28*Math.sin(t*1.25 + 1.2);
+    energy.style.width = Math.round(100*Math.max(0,Math.min(1,e)))+'%';
+    shield.style.width = Math.round(100*Math.max(0,Math.min(1,s)))+'%';
+  }
+  function draw(){
+    const W=cvs.width/DPR, H=cvs.height/DPR;
+    ctx.clearRect(0,0,W,H);
+    const bg=ctx.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#0b1734'); bg.addColorStop(1,'#091024');
+    ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+
+    // parallax skyline lines
+    ctx.save(); ctx.globalAlpha=0.9; ctx.fillStyle='rgba(98,211,255,.85)';
+    for(const L of lines){ ctx.fillRect(L.x|0, (L.y|0), 14, 2); }
+    ctx.restore();
+
+    // title
+    ctx.fillStyle='#eaf2ff'; ctx.font='16px -apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial';
+    ctx.fillText('Aeternos HUD — Live', 12, 24);
+  }
+  function loop(ts){
+    const dt = ts - last; last = ts;
+    step(dt); draw();
+    frames++; acc += dt;
+    if (acc > 500) { fpsEl.textContent = String(Math.round(1000/(acc/frames))); frames=0; acc=0; }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  // Touch counter + score tick
+  cvs.addEventListener('pointerdown', (e)=>{ touches++; touchEl.textContent = String(touches); e.preventDefault(); }, {passive:false});
+  setInterval(()=>{ score++; scoreEl.textContent = String(score); }, 1200);
+
+  // Reset button
+  resetBtn.addEventListener('click', () => { seed(); });
+})();
+</script>
 </body>
+</html>

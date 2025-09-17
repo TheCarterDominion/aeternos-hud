@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover,
+               user-scalable=no, maximum-scale=1"/>
+<title>Aeternos Arcade Hub</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+  :root{--ink:#ecf3ff;--mut:#9fb3cc;--a:#62d3ff;--b:#ff49f0;--gold:#ffd76a;--panel:#0f1a33;--bg1:#0b1734;--bg2:#060a16}
+  html,body{margin:0;height:100%;background:radial-gradient(1400px 900px at 50% 10%, var(--bg1), var(--bg2));color:var(--ink);
+    font-family:-apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial;-webkit-text-size-adjust:100%;overscroll-behavior:none;overflow:hidden}
+  .wrap{position:fixed;inset:0;height:100dvh;display:flex;flex-direction:column;align-items:center;gap:14px;padding:16px;box-sizing:border-box}
+  .top{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:1100px}
+  h1{margin:0;font-size:22px;text-shadow:0 0 16px rgba(98,211,255,.35)}
+  .mut{color:var(--mut);font-size:13px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;width:100%;max-width:1100px}
+  .card{position:relative;background:var(--panel);border:1px solid rgba(255,255,255,.12);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.45);overflow:hidden}
+  .hero{height:160px;background:#091024;position:relative}
+  .fx{position:absolute;inset:0;background:
+      radial-gradient(rgba(255,255,255,.18) 1px, transparent 2px),
+      linear-gradient(90deg, rgba(98,211,255,.18), transparent 60%);background-size:26px 26px, 100% 100%;
+      animation:par 12s linear infinite}
+  @keyframes par{from{background-position:0 0,0 0}to{background-position:-1600px 0,0 0}}
+  .hero.runner{background:linear-gradient(180deg,#12182b,#0a0f22)}
+  .title{padding:12px 14px 10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .btn{border:2px solid rgba(255,255,255,.7);background:transparent;color:var(--ink);padding:8px 12px;border-radius:12px;font-size:15px;text-decoration:none}
+  .pill{border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:6px 10px;background:rgba(255,255,255,.06);font-size:13px}
+  .disabled{opacity:.55;pointer-events:none}
+  /* tiny thumbnails inside heroes */
+  .thumb{position:absolute;inset:auto 12px 12px auto;border:1px solid rgba(255,255,255,.2);border-radius:8px;overflow:hidden}
+  .thumb:before{content:"";display:block;width:120px;height:70px;background:
+    repeating-linear-gradient(90deg, rgba(98,211,255,.9), rgba(98,211,255,.9) 12px, transparent 12px, transparent 20px);}
+  .thumb.runner:before{background:linear-gradient(180deg,#62d3ff,#ff49f0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>Aeternos Arcade Hub</h1>
+      <div class="mut">Choose a build. Everything is single-file & iPad-safe.</div>
+    </div>
+    <a class="btn" href="./index.html">Quick Play</a>
+  </div>
+
+  <div class="grid">
+    <!-- Game 1: Slice -->
+    <div class="card">
+      <div class="hero"><div class="fx"></div><div class="thumb"></div></div>
+      <div class="title">
+        <div>
+          <div style="font-weight:600">Slice • Neon Shards</div>
+          <div class="mut">Tap to slice lines • Combos • Miss flash</div>
+        </div>
+        <a class="btn" href="./index.html">Play</a>
+      </div>
+      <div style="padding:0 14px 14px 14px;display:flex;gap:10px;flex-wrap:wrap">
+        <span class="pill">Touch-first</span><span class="pill">Runs w/ JS blocked (fallback)</span>
+      </div>
+    </div>
+
+    <!-- Game 2: Runner -->
+    <div class="card">
+      <div class="hero runner"><div class="fx"></div><div class="thumb runner"></div></div>
+      <div class="title">
+        <div>
+          <div style="font-weight:600">Pulse Runner</div>
+          <div class="mut">Hold-jump • Duck • Coins • Shield • Audio</div>
+        </div>
+        <a class="btn" href="./game.html">Play</a>
+      </div>
+      <div style="padding:0 14px 14px 14px;display:flex;gap:10px;flex-wrap:wrap">
+        <span class="pill">Hold to extend jump</span><span class="pill">Swipe-down to duck</span>
+      </div>
+    </div>
+
+    <!-- Slot 3: Coming soon -->
+    <div class="card disabled">
+      <div class="hero"><div class="fx"></div></div>
+      <div class="title">
+        <div>
+          <div style="font-weight:600">Neo Arena (Coming Soon)</div>
+          <div class="mut">High-speed dash • Waves • Boss gate</div>
+        </div>
+        <span class="btn">Locked</span>
+      </div>
+      <div style="padding:0 14px 14px 14px;display:flex;gap:10px;flex-wrap:wrap">
+        <span class="pill">WIP</span><span class="pill">Single-file target</span>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  // Prevent iOS zoom/bounce so the hub feels native
+  let lastTouchEnd=0;
+  document.addEventListener('gesturestart', e=>e.preventDefault(), {passive:false});
+  document.addEventListener('dblclick', e=>e.preventDefault(), {passive:false});
+  document.addEventListener('touchend', e=>{
+    const now=performance.now(); if(now-lastTouchEnd<350){e.preventDefault();}
+    lastTouchEnd=now;
+  }, {passive:false});
+</script>
+</body>
+</html>

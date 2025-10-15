@@ -1,0 +1,1 @@
+(function(){ /* omitted in this fallback */ })();

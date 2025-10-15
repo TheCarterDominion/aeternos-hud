@@ -1,1 +1,104 @@
-<!doctype html>...
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<title>Aeternos • Classic (Silk v3)</title>
+<style>
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:#04102a;color:#ecf3ff}
+  main{max-width:820px;margin:24px auto;padding:16px}
+  button{padding:14px 16px;border:2px solid #8cc2ff;border-radius:12px;background:#0b1734;color:#ecf3ff;font-size:16px;margin:6px 8px 6px 0}
+  .pill{display:inline-block;border:1px solid #6e87b8;border-radius:999px;padding:6px 10px;margin:6px 8px 6px 0}
+  #pad{height:40vh;border:2px dashed #7aa2e3;border-radius:14px;margin-top:10px;display:flex;align-items:center;justify-content:center}
+  #unlock{position:sticky;top:0;left:0;right:0;background:#ff3366;color:#fff;padding:10px 14px;border-bottom:2px solid rgba(255,255,255,.3);
+    text-align:center;font-weight:600;display:none}
+</style>
+</head>
+<body>
+<div id="unlock">🔒 Audio locked — tap anywhere once to enable sound</div>
+<main>
+  <h1>Classic (Inline-free, Silk v3)</h1>
+  <div>
+    <button id="btn-enable">Enable Audio</button>
+    <button id="btn-beep">Beep</button>
+    <span class="pill" id="state">Audio: Off</span>
+  </div>
+  <div>
+    <button id="btn-tap">Tap Counter</button>
+    <span class="pill">Taps: <b id="count">0</b></span>
+    <span class="pill">Last: <b id="last">—</b></span>
+  </div>
+  <div id="pad">Tap inside this area</div>
+  <audio id="htmlBeep" preload="auto">
+    <source src="data:audio/wav;base64,UklGRhQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABYAAAAlAAAAPwAAABkAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==" type="audio/wav">
+  </audio>
+</main>
+
+<script>
+(function(){
+  var taps=0, last=document.getElementById('last'), out=document.getElementById('count'),
+      state=document.getElementById('state'), pad=document.getElementById('pad'),
+      banner=document.getElementById('unlock'), html=document.getElementById('htmlBeep');
+
+  function setLast(x){ if(last) last.textContent = x; }
+  function count(){ taps++; if(out) out.textContent = String(taps); }
+
+  // Attach listeners (no inline attrs)
+  ['pointerdown','click','touchstart','keydown'].forEach(function(ev){
+    window.addEventListener(ev,function(){ setLast(ev); unlockAudio(); }, {passive:true});
+  });
+  if(document.getElementById('btn-tap')) {
+    document.getElementById('btn-tap').addEventListener('click', count);
+  }
+  if(pad){
+    pad.addEventListener('touchstart', function(e){ count(); e.preventDefault(); }, {passive:false});
+    pad.addEventListener('click', count);
+    pad.addEventListener('mousedown', count);
+  }
+
+  // Audio
+  var AC=null, master=null, unlocked=false;
+  function badge(){
+    if(state) state.textContent = unlocked ? 'Audio: On' : (AC ? ('Audio: '+AC.state) : 'Audio: Off');
+    if(banner) banner.style.display = unlocked ? 'none' : 'block';
+  }
+  function ensure(){
+    if(AC) return;
+    var C = window.AudioContext || window.webkitAudioContext;
+    if(!C) return;
+    try{
+      AC = new C({latencyHint:'interactive'});
+      master = AC.createGain(); master.gain.value = 0.7; master.connect(AC.destination);
+    }catch(e){ AC=null; }
+  }
+  async function unlockAudio(){
+    if(unlocked) return;
+    try{ if(html){ try{ html.currentTime=0; await html.play(); html.pause(); }catch(e){} } }catch(e){}
+    ensure();
+    if(AC && AC.state !== 'running'){ try{ await AC.resume(); }catch(e){} }
+    if(AC){ try{ var o=AC.createOscillator(), g=AC.createGain(); g.gain.value=0.0001; o.connect(g); g.connect(master); o.start(); o.stop(AC.currentTime+0.04);}catch(e){} }
+    unlocked = AC ? (AC.state === 'running') : !!html;
+    badge();
+  }
+  function beep(){
+    if(AC && unlocked){
+      var t=AC.currentTime, o=AC.createOscillator(), g=AC.createGain();
+      o.type='sine'; o.frequency.value=660;
+      g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.22,t+.01); g.gain.exponentialRampToValueAtTime(.0001,t+.15);
+      o.connect(g); g.connect(master); o.start(t); o.stop(t+.18);
+    } else if(html){
+      try{ html.currentTime=0; html.play(); }catch(e){}
+    }
+  }
+
+  var btnEnable = document.getElementById('btn-enable');
+  var btnBeep = document.getElementById('btn-beep');
+  if(btnEnable) btnEnable.addEventListener('click', unlockAudio);
+  if(btnBeep)   btnBeep.addEventListener('click', beep);
+
+  badge();
+})();
+</script>
+</body>
+</html>

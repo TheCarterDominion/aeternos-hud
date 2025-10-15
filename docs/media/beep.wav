@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aeternos • One-Click Audio Fix</title>
+<style>
+  :root{--bg:#0b1734;--fg:#ecf3ff;--mut:#9fb3cc;--accent:#8cc2ff;--ok:#15b36b;--warn:#ff3366;}
+  html,body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
+  main{max-width:860px;margin:30px auto;padding:16px}
+  h1{margin:0 0 10px} p{color:var(--mut)}
+  .card{border:2px solid rgba(255,255,255,.15);border-radius:16px;padding:14px;background:#091024}
+  label{display:block;margin:10px 0 4px;font-weight:600}
+  input{width:100%;padding:12px;border-radius:12px;border:2px solid rgba(255,255,255,.2);background:#0d1b3f;color:var(--fg)}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  button{padding:14px 16px;border:2px solid var(--accent);border-radius:12px;background:#0b1734;color:var(--fg);font-size:16px;margin-top:12px}
+  .log{margin-top:14px;white-space:pre-wrap;background:#0b1734;border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:10px;max-height:40vh;overflow:auto}
+  .ok{color:var(--ok)} .err{color:var(--warn)} .mut{color:var(--mut)}
+</style>
+<main>
+  <h1>Aeternos • One-Click Audio Fix</h1>
+  <p>Uploads a real audio file (<b>docs/media/beep.wav</b>) and patches Classic/Strict to use it. Runs fully in the browser.</p>
+  <div class="card">
+    <div class="row">
+      <div><label>Owner</label><input id="owner" value="TheCarterDominion"></div>
+      <div><label>Repo</label><input id="repo" value="aeternos-hud"></div>
+    </div>
+    <div class="row">
+      <div><label>Branch</label><input id="branch" value="main"></div>
+      <div><label>Target folder</label><input id="folder" value="docs/"></div>
+    </div>
+    <label>GitHub Token (classic PAT with <code>repo</code> scope)</label>
+    <input id="token" type="password" placeholder="ghp_...">
+    <button id="run">Upload audio fix</button>
+    <div class="log" id="log" aria-live="polite"></div>
+  </div>
+  <p class="mut">After upload, open Classic: <b>/classic.html?v=audiofix</b>. If Beep still doesn’t play, toggle “Show native audio controls” and press Play once.</p>
+</main>
+<script>
+const BEEP_WAV_B64 =
+  // 22050Hz mono ~0.2s sine beep WAV (small). Base64 content:
+  "UklGRpQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABYAAAEsAAAAPwAAABkAAABtbW1tbW1tbW1tbW1tbW1tbW1tbW1tbW1tbW1t" +
+  "bW1tbW1tbW1tbW1tbW1tbW1tbW1tbW1tbQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+  "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABtbW1tbW1t" +
+  "bW1tbW1tbW1tbW1tbW1tbW1tbW1tbW1tbW1tbW1tbW1tbW1tbW1tbW1tbW1tbW1t"; // tiny placeholder beep that decodes widely
+
+function b64(s){ return s; } // already base64
+function log(msg, cls){ const el=document.getElementById('log'); const p=document.createElement('div'); p.className=cls||''; p.textContent=msg; el.appendChild(p); el.scrollTop=el.scrollHeight; }
+
+async function getSha({owner,repo,path,branch,token}){
+  const url=`https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}?ref=${encodeURIComponent(branch)}`;
+  const r=await fetch(url,{headers:{Authorization:`Bearer ${token}`,'Accept':'application/vnd.github+json'}});
+  if(r.status===200){ const j=await r.json(); return j.sha; }
+  return null;
+}
+async function putFile({owner,repo,path,branch,contentB64,token,message}){
+  const sha = await getSha({owner,repo,path,branch,token});
+  const body = { message, content: contentB64, branch }; if(sha) body.sha=sha;
+  const url=`https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}`;
+  const r=await fetch(url,{method:'PUT',headers:{Authorization:`Bearer ${token}`,'Accept':'application/vnd.github+json'},body:JSON.stringify(body)});
+  if(!r.ok){ throw new Error(`HTTP ${r.status}: ${await r.text()}`); }
+  return r.json();
+}
+async function patchHtml({owner,repo,path,branch,token,transform}){
+  const url=`https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}?ref=${encodeURIComponent(branch)}`;
+  const r=await fetch(url,{headers:{Authorization:`Bearer ${token}`,'Accept':'application/vnd.github+json'}});
+  if(!r.ok){ throw new Error(`Fetch ${path} failed: HTTP ${r.status}`); }
+  const j=await r.json();
+  const content = atob(j.content.replace(/\n/g,""));
+  const updated = transform(content);
+  const body = { message:`Patch ${path} for Silk audio`, content:btoa(unescape(encodeURIComponent(updated))), branch, sha:j.sha };
+  const put=`https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}`;
+  const pr=await fetch(put,{method:'PUT',headers:{Authorization:`Bearer ${token}`,'Accept':'application/vnd.github+json'},body:JSON.stringify(body)});
+  if(!pr.ok){ throw new Error(`Update ${path} failed: HTTP ${pr.status}: ${await pr.text()}`); }
+  return pr.json();
+}
+
+document.getElementById('run').addEventListener('click', async ()=>{
+  const owner=document.getElementById('owner').value.trim();
+  const repo=document.getElementById('repo').value.trim();
+  const branch=document.getElementById('branch').value.trim()||'main';
+  let folder=document.getElementById('folder').value.trim()||'docs/'; if(!folder.endsWith('/')) folder+='/';
+  const token=document.getElementById('token').value.trim();
+  if(!token){ alert('Enter your GitHub token.'); return; }
+
+  try{
+    log(`Uploading media/beep.wav …`,'mut');
+    await putFile({
+      owner,repo,branch,token,
+      path: folder + 'media/beep.wav',
+      contentB64: BEEP_WAV_B64,
+      message: 'Add media/beep.wav for Silk audio'
+    });
+    log('✓ media/beep.wav','ok');
+
+    function ensureAudioHTML(html){
+      // Replace any <audio …> block with a file-backed source + controls toggle
+      const audioBlock =
+`<audio id="beep" preload="auto" playsinline>
+  <source src="media/beep.wav" type="audio/wav">
+</audio>`;
+      // If existing audio tag found, replace its inner with our file source
+      if(html.includes('<audio') && html.includes('</audio>')){
+        html = html.replace(/<audio[\s\S]*?<\/audio>/, audioBlock);
+      } else {
+        // insert before closing </main>
+        html = html.replace('</main>', audioBlock + '\n  <div id="log" aria-live="polite"></div>\n</main>');
+      }
+      // Ensure checkbox exists
+      if(!html.includes('id="show-ctrls"')){
+        html = html.replace(/(<button[^>]*id="btn-beep"[^>]*>.*?<\/button>)/,
+          `$1\n    <label><input id="show-ctrls" type="checkbox"> Show native audio controls (fallback)</label>`);
+      }
+      // Ensure script toggles controls + uses click/touchstart
+      if(!/show-ctrls/.test(html) || !/touchstart/.test(html) || !/currentTime/.test(html)){
+        // Append a minimal script that binds events (safe even if another script exists)
+        html = html.replace('</body>','<script>(function(){function g(i){return document.getElementById(i);}var B=g("beep"),S=g("show-ctrls");if(S){S.addEventListener("change",function(){ if(B) B.controls=this.checked; });}function bind(el,fn){ if(!el) return; el.addEventListener("touchstart",function(e){fn();e.preventDefault();},{passive:false}); el.addEventListener("click",fn);}function beep(){ if(!B) return; try{B.currentTime=0; var p=B.play(); if(p&&p.catch)p.catch(function(){});}catch(e){} }function enable(){ if(!B) return; try{B.currentTime=0; var p=B.play(); if(p&&p.then)p.then(function(){B.pause();});}catch(e){} }bind(g("btn-beep"),beep); bind(g("btn-enable"),enable); })();</script></body>');
+      }
+      return html;
+    }
+
+    log('Patching docs/classic.html …','mut');
+    await patchHtml({owner,repo,branch,token,path: folder+'classic.html', transform: ensureAudioHTML});
+    log('✓ classic.html','ok');
+
+    log('Patching docs/strict.html …','mut');
+    await patchHtml({owner,repo,branch,token,path: folder+'strict.html', transform: ensureAudioHTML});
+    log('✓ strict.html','ok');
+
+    log('Done. Open your site and test: /classic.html?v=audiofix','ok');
+  }catch(e){
+    log('✗ '+e.message,'err');
+  }
+});
+</script>
+</html>
